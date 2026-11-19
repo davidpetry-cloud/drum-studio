@@ -1,0 +1,6 @@
+name: drum_studio
+description: Drum Studio metronome and tuning guide, written in Dart and compiled to JavaScript.
+publish_to: none
+
+environment:
+  sdk: ^3.9.0

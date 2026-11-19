@@ -1,0 +1,35 @@
+Drum Studio
+Copyright (c) 2026 David Petry. All rights reserved.
+
+This repository and everything in it that David Petry created (the source
+code, the compiled code, the written content including the tuning guide
+text and descriptions, the design, the graphics and icons, and the name
+"Drum Studio" as used for this app) is proprietary and is the
+intellectual property of David Petry.
+
+No licence is granted. Except where the law allows it without permission,
+you may not copy, modify, merge, publish, distribute, sublicense, sell,
+host or create derivative works from any part of this repository, in
+whole or in part, without David Petry's prior written permission.
+
+Viewing this repository on GitHub, and the copying that GitHub's Terms of
+Service allow on its own platform for public repositories, does not grant
+any other right. Using the published app at its official address for your
+own personal practice is permitted.
+
+Third-party components are not covered by this notice. They keep their
+own licences, which are listed in THIRD-PARTY-NOTICES.md and included in
+full where those licences require it.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
+
+Pitch ranges and tuning advice are general starting points gathered from
+the published sources listed in the app. They are not guarantees about
+any particular instrument.
+
+For permission requests, contact David Petry through
+https://david-petry.netlify.app/.
