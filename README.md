@@ -4,6 +4,8 @@ A drummer's practice app by David Petry: a metronome built for drummers and a
 drum tuning guide with a microphone tuner. It installs on a phone like an app
 and works offline.
 
+**▶ Open the app: https://davidpetry-cloud.github.io/drum-studio/**
+
 © 2026 David Petry. All rights reserved. This is proprietary software (see
 [`LICENSE`](LICENSE)); third-party parts are listed in
 [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md).
