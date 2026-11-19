@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Drum Tuning · Drum Studio</title>
+<meta name="description" content="Tune your drums: a microphone tuner that reads each lug, starting pitch ranges by drum size, what shell materials and heads do, and a tom interval planner.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#080a0e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preload" href="fonts/outfit-300-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts/fonts.css">
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="css/studio.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<nav class="topnav" aria-label="Drum Studio">
+  <a href="index.html" class="brand" aria-label="Drum Studio home"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">Drum Studio</span></a>
+  <ul class="navlinks">
+    <li><a href="index.html">Metronome</a></li>
+    <li><a href="tuning.html" aria-current="page">Tuning</a></li>
+    <li><button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to light theme"><span aria-hidden="true">☀</span></button></li>
+  </ul>
+</nav>
+
+<main id="main">
+  <header class="pagehead">
+    <p class="eyebrow">Sound</p>
+    <h1>Drum tuning</h1>
+    <p class="lede">Tell the guide about your drum to get a starting pitch range, then use the tuner to even out each lug. The numbers get you close. Your ears finish the job.</p>
+  </header>
+
+  <noscript><p class="panel notice">The tuner and the guide need JavaScript turned on. The tuning steps below still work without it.</p></noscript>
+
+  <!-- Guide: your drum -->
+  <section class="panel" id="guide" aria-labelledby="guide-title">
+    <h2 id="guide-title">Your drum</h2>
+    <div class="form-grid">
+      <label class="field"><span class="label">Drum</span><select id="drum-type"></select></label>
+      <label class="field"><span class="label">Size</span><select id="drum-size"></select></label>
+      <label class="field"><span class="label">Depth</span><select id="drum-depth"></select></label>
+      <label class="field"><span class="label">Shell</span><select id="material"></select></label>
+      <label class="field"><span class="label">Batter (top) head</span><select id="batter"></select></label>
+      <label class="field"><span class="label">Resonant (bottom) head</span><select id="reso"></select></label>
+      <label class="field" id="relation-row"><span class="label">Resonant vs batter</span><select id="relation"></select></label>
+    </div>
+
+    <div class="range-card" aria-labelledby="range-title">
+      <h3 id="range-title">Starting range</h3>
+      <dl class="range-stops">
+        <div><dt>Low</dt><dd id="range-low">–</dd></div>
+        <div><dt>Medium</dt><dd id="range-med">–</dd></div>
+        <div><dt>High</dt><dd id="range-high">–</dd></div>
+      </dl>
+      <p class="hint" id="range-scaled"></p>
+    </div>
+    <ul class="notes" id="notes"></ul>
+  </section>
+
+  <!-- Tuner -->
+  <section class="panel" id="tuner" aria-labelledby="tuner-title">
+    <h2 id="tuner-title">Tuner</h2>
+    <p class="notice" id="no-mic" hidden>This browser can’t open a microphone here. The tuner needs a secure (https) page in a current browser.</p>
+    <div id="tuner-body">
+      <p class="hint">Tap lightly with a stick about an inch from each tension rod to compare lugs. To read the drum’s note, hit the centre. For a clean reading of one head, rest a hand lightly on the other head or lay the drum on a soft surface. The sound is analysed on this device and never sent anywhere.</p>
+      <div class="actions">
+        <button type="button" class="btn-primary" id="mic-start" aria-pressed="false">Start tuner</button>
+        <span class="listen" id="listen-state">Microphone off</span>
+      </div>
+      <div class="level" id="level" aria-hidden="true"><span></span></div>
+
+      <div class="readout">
+        <p class="reading-hz" id="reading-hz">– Hz</p>
+        <p class="reading-note" id="reading-note">Tap the drum</p>
+        <div class="cents" aria-hidden="true">
+          <span class="cents-scale"><span>−50¢</span><span>0</span><span>+50¢</span></span>
+          <span class="needle" id="needle" hidden></span>
+        </div>
+      </div>
+
+      <div class="target">
+        <p class="hint" id="target-line"></p>
+        <div class="target-bar" aria-hidden="true">
+          <span class="zone"></span>
+          <span class="target-mark" id="target-mark" hidden></span>
+          <span class="target-ends"><span>Low</span><span>Medium</span><span>High</span></span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="sensitivity">Sensitivity</label>
+        <input type="range" id="sensitivity" min="1" max="10" step="1" value="6" aria-describedby="sens-hint">
+        <p class="hint" id="sens-hint">Turn it down in a noisy room, up if light taps don’t register.</p>
+      </div>
+
+      <div class="lugs-head">
+        <h3 class="label">Lug readings</h3>
+        <button type="button" class="link-btn" id="lugs-clear">Clear</button>
+      </div>
+      <ol class="lugs" id="lugs"></ol>
+      <p class="lug-status" id="lug-status"></p>
+      <p class="status" id="tuner-status" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <!-- Planner -->
+  <section class="panel" id="planner" aria-labelledby="planner-title">
+    <h2 id="planner-title">Tom interval planner</h2>
+    <p class="hint">Spacing toms by a musical interval makes fills sound melodic. Pick your toms, an interval, and a pitch for the smallest one.</p>
+    <fieldset class="field">
+      <legend class="label">Your toms</legend>
+      <div class="chips" id="plan-sizes"></div>
+    </fieldset>
+    <div class="form-grid">
+      <label class="field"><span class="label">Interval between toms</span><select id="plan-interval"></select></label>
+      <div class="field">
+        <label class="label" for="plan-top">Smallest tom (Hz)</label>
+        <div class="inline">
+          <input type="number" id="plan-top" min="30" max="1000" step="1" inputmode="decimal">
+          <button type="button" class="btn-ghost" id="plan-suggest">Use medium</button>
+        </div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="plan">
+        <caption class="visually-hidden">Target pitch for each tom</caption>
+        <thead><tr><th scope="col">Tom</th><th scope="col">Target</th><th scope="col">Note</th><th scope="col">Range check</th></tr></thead>
+        <tbody id="plan-out"></tbody>
+      </table>
+    </div>
+    <p class="status" id="plan-summary" role="status" aria-live="polite"></p>
+  </section>
+
+  <!-- Method -->
+  <section class="panel" aria-labelledby="steps-title">
+    <h2 id="steps-title">How to tune a head</h2>
+    <ol class="steps">
+      <li>Seat the head: press the centre firmly with your palm a few times so it settles on the bearing edge.</li>
+      <li>Finger-tighten every rod evenly until each one just touches the hoop.</li>
+      <li>Tighten in a star (criss-cross) pattern, the same small turn on every rod: half turns at first, then quarter turns as you get close.</li>
+      <li>Tap about an inch in from each rod and listen, or use the tuner. Bring any lug that sounds off up or down to match the others.</li>
+      <li>Tune the resonant head the same way, then choose how it relates to the batter head.</li>
+      <li>Play the drum with the rest of the kit and adjust by ear.</li>
+    </ol>
+  </section>
+
+  <section class="panel" aria-labelledby="sources-title">
+    <h2 id="sources-title">Sources</h2>
+    <p class="hint">Researched November 2026. The sources don’t always agree, and where they don’t, the guide says so. Pitch ranges are starting points, not rules.</p>
+    <ol class="sources" id="sources"></ol>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>Drum Studio by <a href="https://david-petry.netlify.app/">David Petry</a> · <a href="https://david-petry.netlify.app/drum-exercises.html">Free drum exercises</a></p>
+  <p>Works offline once loaded. Your settings stay on this device. © 2026 David Petry. All rights reserved.</p>
+</footer>
+<script src="js/tuning.js" defer></script>
+</body>
+</html>

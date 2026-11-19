@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Metronome · Drum Studio</title>
+<meta name="description" content="A drummer's metronome: time signatures, subdivisions, swing, accents and ghost notes on every beat, saved tempos, and speed and gap trainers. Works offline.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#080a0e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preload" href="fonts/outfit-300-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts/fonts.css">
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="css/studio.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<nav class="topnav" aria-label="Drum Studio">
+  <a href="index.html" class="brand" aria-label="Drum Studio home"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">Drum Studio</span></a>
+  <ul class="navlinks">
+    <li><a href="index.html" aria-current="page">Metronome</a></li>
+    <li><a href="tuning.html">Tuning</a></li>
+    <li><button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to light theme"><span aria-hidden="true">☀</span></button></li>
+  </ul>
+</nav>
+
+<main id="main">
+  <header class="pagehead">
+    <p class="eyebrow">Practice</p>
+    <h1>Metronome</h1>
+    <p class="lede">Set the tempo, pick a time signature, then tap any beat to make it an accent, a ghost note or a rest. Nothing plays until you press Start.</p>
+  </header>
+
+  <noscript><p class="panel notice">The metronome needs JavaScript turned on.</p></noscript>
+  <p class="panel notice" id="no-audio" hidden>This browser can’t play web audio, so the metronome can’t run here. Try a current version of Chrome, Edge, Firefox or Safari.</p>
+
+  <div id="metro" hidden>
+    <!-- The player: tempo, the beat grid and Start -->
+    <section class="panel player" aria-labelledby="player-title">
+      <h2 id="player-title" class="visually-hidden">Player</h2>
+
+      <div class="tempo">
+        <label for="bpm" class="label">Tempo</label>
+        <div class="tempo-readout">
+          <input type="number" id="bpm" class="bpm" min="20" max="300" step="1" value="96" inputmode="numeric" aria-describedby="tempo-unit tempo-word">
+          <div class="tempo-meta">
+            <span class="tempo-word" id="tempo-word">Andante</span>
+            <span class="tempo-unit" id="tempo-unit">Beats per minute, counting each quarter note</span>
+          </div>
+        </div>
+        <div class="slide">
+          <button type="button" class="step" id="bpm-down-5" aria-label="Slower by 5 BPM">−5</button>
+          <button type="button" class="step" id="bpm-down" aria-label="Slower by 1 BPM">−</button>
+          <input type="range" id="bpm-range" min="20" max="300" step="1" value="96" aria-label="Tempo slider, 20 to 300 BPM">
+          <button type="button" class="step" id="bpm-up" aria-label="Faster by 1 BPM">+</button>
+          <button type="button" class="step" id="bpm-up-5" aria-label="Faster by 5 BPM">+5</button>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="flash" id="flash" aria-hidden="true"><span class="flash-ring"></span></div>
+        <p class="position" id="position">Not playing</p>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn-primary" id="start" aria-pressed="false">Start</button>
+        <button type="button" class="btn-ghost" id="tap">Tap tempo</button>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+
+      <div class="grid-head">
+        <h3 class="label" id="grid-title">Beats: tap to change</h3>
+        <button type="button" class="link-btn" id="reset-accents">Reset accents</button>
+      </div>
+      <div class="grid" id="grid" role="group" aria-labelledby="grid-title"></div>
+      <ul class="legend" aria-label="What the beat marks mean">
+        <li><span class="mark lv-accent" aria-hidden="true"></span>Accent</li>
+        <li><span class="mark lv-normal" aria-hidden="true"></span>Normal</li>
+        <li><span class="mark lv-ghost" aria-hidden="true"></span>Ghost (quiet)</li>
+        <li><span class="mark lv-mute" aria-hidden="true"></span>Mute (rest)</li>
+      </ul>
+    </section>
+
+    <div class="columns">
+      <!-- Rhythm: time signature, subdivision, swing -->
+      <section class="panel" aria-labelledby="rhythm-title">
+        <h2 id="rhythm-title">Rhythm</h2>
+        <fieldset class="field">
+          <legend class="label">Time signature</legend>
+          <div class="chips" id="meter-quick"></div>
+          <div class="meter-pick">
+            <label class="visually-hidden" for="meter-beats">Beats per bar</label>
+            <select id="meter-beats"></select>
+            <span class="meter-slash" aria-hidden="true">/</span>
+            <label class="visually-hidden" for="meter-unit">Note value of each beat</label>
+            <select id="meter-unit"></select>
+          </div>
+        </fieldset>
+        <div class="field" id="groups-row" hidden>
+          <label class="label" for="meter-groups">Grouping</label>
+          <select id="meter-groups"></select>
+          <p class="hint">How the beats are felt. 7/8 as 2 + 2 + 3 accents beats 1, 3 and 5.</p>
+        </div>
+        <label class="check" id="dotted-row" hidden><input type="checkbox" id="dotted"> Count the tempo in dotted quarters (one per group of three)</label>
+        <div class="field">
+          <label class="label" for="sub">Subdivision</label>
+          <select id="sub"></select>
+        </div>
+        <div class="field" id="swing-row" hidden>
+          <label class="label" for="swing">Swing</label>
+          <input type="range" id="swing" min="50" max="75" step="1" value="50" aria-describedby="swing-out">
+          <output id="swing-out" for="swing" class="hint">Straight (50%)</output>
+        </div>
+      </section>
+
+      <!-- Sound and feel -->
+      <section class="panel" aria-labelledby="sound-title">
+        <h2 id="sound-title">Sound &amp; feel</h2>
+        <div class="field">
+          <label class="label" for="sound">Click sound</label>
+          <select id="sound">
+            <option value="wood">Woodblock</option>
+            <option value="beep">Beep</option>
+            <option value="cowbell">Cowbell</option>
+            <option value="stick">Stick click</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="volume">Volume</label>
+          <input type="range" id="volume" min="0" max="100" step="1" value="80">
+        </div>
+        <div class="field">
+          <label class="label" for="sub-volume">Subdivision volume</label>
+          <input type="range" id="sub-volume" min="0" max="100" step="1" value="60">
+        </div>
+        <label class="check"><input type="checkbox" id="big-flash"> Flash the whole beat light on every beat</label>
+        <label class="check" id="vibrate-row" hidden><input type="checkbox" id="vibrate"> Vibrate on every beat</label>
+      </section>
+    </div>
+
+    <!-- Trainers -->
+    <section class="panel" aria-labelledby="trainers-title">
+      <h2 id="trainers-title">Trainers</h2>
+      <div class="columns">
+        <fieldset class="trainer">
+          <legend><label class="check"><input type="checkbox" id="speed-on"> Speed trainer</label></legend>
+          <p class="hint">Builds tempo a little at a time. Stopping returns to your starting tempo.</p>
+          <div class="trio">
+            <label class="field"><span class="label">Change by (BPM)</span><input type="number" id="speed-step" value="4" min="-50" max="50" inputmode="numeric"></label>
+            <label class="field"><span class="label">Every (bars)</span><input type="number" id="speed-every" value="4" min="1" max="64" inputmode="numeric"></label>
+            <label class="field"><span class="label">Stop at (BPM)</span><input type="number" id="speed-target" value="140" min="20" max="300" inputmode="numeric"></label>
+          </div>
+        </fieldset>
+        <fieldset class="trainer">
+          <legend><label class="check"><input type="checkbox" id="gap-on"> Gap trainer</label></legend>
+          <p class="hint">Mutes some bars so you can check your inner clock. The beat light keeps going.</p>
+          <div class="trio">
+            <label class="field"><span class="label">Play (bars)</span><input type="number" id="gap-play" value="2" min="1" max="64" inputmode="numeric"></label>
+            <label class="field"><span class="label">Then mute (bars)</span><input type="number" id="gap-mute" value="2" min="1" max="64" inputmode="numeric"></label>
+          </div>
+        </fieldset>
+      </div>
+    </section>
+
+    <!-- Saved tempos -->
+    <section class="panel" aria-labelledby="presets-title">
+      <h2 id="presets-title">Saved tempos</h2>
+      <form id="preset-form" class="preset-form">
+        <label class="label" for="preset-name">Name for the current settings</label>
+        <div class="inline">
+          <input type="text" id="preset-name" maxlength="40" placeholder="e.g. Songo warm-up" autocomplete="off">
+          <button type="submit" class="btn-ghost">Save</button>
+        </div>
+        <p class="hint">Saves tempo, time signature, accents, subdivision and swing on this device. The same name updates it.</p>
+      </form>
+      <div class="columns">
+        <div>
+          <h3 class="label">Yours</h3>
+          <p class="hint" id="presets-empty">Nothing saved yet.</p>
+          <ul class="presets" id="my-presets"></ul>
+        </div>
+        <div>
+          <h3 class="label">Starting points</h3>
+          <ul class="presets" id="starter-presets"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel keys" aria-labelledby="keys-title">
+      <h2 id="keys-title">Keyboard</h2>
+      <dl class="keylist">
+        <div><dt><kbd>Space</kbd></dt><dd>Start or stop</dd></div>
+        <div><dt><kbd>↑</kbd> <kbd>↓</kbd></dt><dd>Tempo up or down 1 (hold <kbd>Shift</kbd> for 10)</dd></div>
+        <div><dt><kbd>T</kbd></dt><dd>Tap tempo</dd></div>
+      </dl>
+    </section>
+  </div>
+</main>
+
+<footer class="foot">
+  <p>Drum Studio by <a href="https://david-petry.netlify.app/">David Petry</a> · <a href="https://david-petry.netlify.app/drum-exercises.html">Free drum exercises</a></p>
+  <p>Works offline once loaded. Your settings stay on this device. © 2026 David Petry. All rights reserved.</p>
+</footer>
+<script src="js/metronome.js" defer></script>
+</body>
+</html>
