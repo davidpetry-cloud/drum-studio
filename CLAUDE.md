@@ -12,11 +12,12 @@
 ## Working notes
 
 - Behaviour is Dart in `dart/`, compiled to `js/` with `sh dart/build.sh`
-  (analyze, checks, compile). Commit the compiled output: GitHub Pages
-  publishes `main` as is, with no build.
+  (analyze, checks, compile). Commit the compiled output: the Pages workflow
+  (`.github/workflows/pages.yml`) runs the checks but doesn't compile.
 - Keep logic that doesn't need the browser in `dart/lib/` and cover it in
   `dart/test/checks.dart`.
-- If files are added or removed, update `FILES` and bump `VERSION` in `sw.js`.
+- If files are added or removed, update `FILES` and bump `VERSION` in `sw.js`,
+  and add new top-level files or folders to the workflow's copy step.
 - Accessibility: every state shown by colour also has a shape or text, and
   controls are at least 44px tall. Announce changes through the page's
   `role="status"` region.

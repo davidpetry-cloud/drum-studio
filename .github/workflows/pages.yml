@@ -1,0 +1,57 @@
+# Publishes Drum Studio to GitHub Pages on every push to main.
+# Settings → Pages → Source must be "GitHub Actions".
+#
+# 1. check:   the Dart analyzer and checks must pass (nothing ships if not).
+# 2. deploy:  copies only the files the app serves into _site and publishes
+#             them. The compiled js/ is committed, so nothing is built here.
+name: Publish to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One publish at a time; a newer push replaces a queued one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - name: Analyze and run checks
+        working-directory: dart
+        run: |
+          dart pub get
+          dart analyze --fatal-infos
+          dart run test/checks.dart
+
+  deploy:
+    needs: check
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Collect the site files
+        run: |
+          mkdir _site
+          cp -R index.html tuning.html manifest.webmanifest sw.js \
+                css js fonts icons LICENSE THIRD-PARTY-NOTICES.md _site/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

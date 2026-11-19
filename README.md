@@ -52,7 +52,7 @@ committed, so GitHub Pages just publishes the folder.
 | `dart/web/` | The browser side of each page, plus shared DOM bindings |
 | `dart/test/checks.dart` | Checks for everything in `dart/lib/` |
 | `sw.js`, `manifest.webmanifest`, `icons/` | Offline support and installing |
-| `.nojekyll` | Tells GitHub Pages to publish the files as they are |
+| `.github/workflows/pages.yml` | Checks, then publishes the site to GitHub Pages |
 
 ### Rebuilding after a Dart change
 
@@ -72,10 +72,16 @@ background, so returning visitors get updates on their next visit. If you
 
 ### Hosting: GitHub Pages
 
-Published from the `main` branch, root folder (Settings → Pages → Deploy from
-a branch). Every push to `main` goes live in a minute or two at
-https://davidpetry-cloud.github.io/drum-studio/. All links are relative, so
-the app works in that `/drum-studio/` folder and on a custom domain alike.
+Published by `.github/workflows/pages.yml` on every push to `main`
+(Settings → Pages → Source: **GitHub Actions**). The workflow runs the Dart
+analyzer and checks first, and publishes nothing if they fail. It then copies
+only the files the app serves into the site, so `dart/` and the docs stay out
+of it. The workflow can also be run by hand from the Actions tab.
+
+Live at https://davidpetry-cloud.github.io/drum-studio/. All links are
+relative, so the app works in that `/drum-studio/` folder and on a custom
+domain alike. **If you add a top-level file or folder the app serves, add it
+to the copy step in the workflow** (and to `FILES` in `sw.js`).
 
 ### Security
 
