@@ -38,7 +38,7 @@ and works offline.
 
 Static HTML and CSS with no build step on the server. The behaviour is written
 in Dart and compiled to JavaScript, and the compiled files in `js/` are
-committed, so Netlify just publishes the folder.
+committed, so GitHub Pages just publishes the folder.
 
 | Path | Purpose |
 |---|---|
@@ -50,7 +50,7 @@ committed, so Netlify just publishes the folder.
 | `dart/web/` | The browser side of each page, plus shared DOM bindings |
 | `dart/test/checks.dart` | Checks for everything in `dart/lib/` |
 | `sw.js`, `manifest.webmanifest`, `icons/` | Offline support and installing |
-| `netlify.toml` | Hosting and security headers |
+| `.nojekyll` | Tells GitHub Pages to publish the files as they are |
 
 ### Rebuilding after a Dart change
 
@@ -68,12 +68,20 @@ The service worker serves the cached app first and refreshes it in the
 background, so returning visitors get updates on their next visit. If you
 **add or remove** files, list them in `FILES` in `sw.js` and bump `VERSION`.
 
+### Hosting: GitHub Pages
+
+Published from the `main` branch, root folder (Settings → Pages → Deploy from
+a branch). Every push to `main` goes live in a minute or two at
+https://davidpetry-cloud.github.io/drum-studio/. All links are relative, so
+the app works in that `/drum-studio/` folder and on a custom domain alike.
+
 ### Security
 
-The pages run under a strict Content-Security-Policy: no inline scripts or
-styles and nothing loaded from other sites. Scripts change the look only
-through CSS custom properties. The microphone is allowed by
-`Permissions-Policy` on the tuning page only.
+Each page sets a strict Content-Security-Policy in a `<meta>` tag (GitHub
+Pages can't send custom headers): no inline scripts or styles and nothing
+loaded from other sites. Scripts change the look only through CSS custom
+properties. If you edit the policy, change it in both pages. The microphone
+is only requested on the tuning page, and only when you press Start tuner.
 
 ## Tuning data
 
