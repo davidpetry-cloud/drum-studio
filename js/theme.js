@@ -9,9 +9,6 @@
   }
   document.documentElement.setAttribute('data-theme', t);
   document.documentElement.classList.add('js');
-  // After the first visit, phones show a compact header (see studio.css).
-  try {
-    if (localStorage.getItem('ds-visited')) document.documentElement.classList.add('returning');
-    localStorage.setItem('ds-visited', '1');
-  } catch (e) {}
+  // Pages look the same on every visit. Tidy away the old first-visit flag.
+  try { localStorage.removeItem('ds-visited'); } catch (e) {}
 })();
