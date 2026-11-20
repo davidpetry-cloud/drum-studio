@@ -3,6 +3,8 @@
 /// it runs (and is checked) on the command line too.
 library;
 
+import 'dart:math' as math;
+
 const minBpm = 20;
 const maxBpm = 300;
 
@@ -101,8 +103,9 @@ class Meter {
 
   /// Parses "7/8" or "7/8:3+2+2". Returns null for anything invalid.
   static Meter? tryParse(String text) {
-    final m = RegExp(r'^\s*(\d+)\s*/\s*(\d+)\s*(?::\s*([\d+\s]+))?$')
-        .firstMatch(text);
+    final m = RegExp(
+      r'^\s*(\d+)\s*/\s*(\d+)\s*(?::\s*([\d+\s]+))?$',
+    ).firstMatch(text);
     if (m == null) return null;
     final beats = int.parse(m[1]!), unit = int.parse(m[2]!);
     List<int>? groups;
@@ -235,14 +238,49 @@ class SpeedTrainer {
   int everyBars;
   int target;
 
+  /// Whether the run actually moves: on, a real step, and the target lies
+  /// in the direction of the step (rising toward a higher target, or
+  /// falling toward a lower one).
+  bool movesFrom(int startBpm) =>
+      enabled &&
+      everyBars >= 1 &&
+      step != 0 &&
+      (step > 0 ? clampBpm(target) > startBpm : clampBpm(target) < startBpm);
+
   /// The tempo to use at the start of bar [bar] (0-based), given the tempo
-  /// the run started at.
+  /// the run started at. If the target is already reached or lies the other
+  /// way, the tempo simply stays put.
   int tempoFor(int startBpm, int bar) {
-    if (!enabled || everyBars < 1 || step == 0) return startBpm;
-    final raised = startBpm + step * (bar ~/ everyBars);
-    return clampBpm(
-      step > 0 ? raised.clamp(startBpm, target) : raised.clamp(target, startBpm),
-    );
+    if (!movesFrom(startBpm)) return startBpm;
+    final goal = clampBpm(target);
+    final moved = startBpm + step * (bar ~/ everyBars);
+    return clampBpm(step > 0 ? math.min(moved, goal) : math.max(moved, goal));
+  }
+
+  /// Bars from bar [bar] (counted from the run's start) until the next tempo
+  /// change, or null once the target is reached or nothing will change.
+  int? barsUntilNextStep(int startBpm, int bar) {
+    if (!movesFrom(startBpm) || tempoFor(startBpm, bar) == clampBpm(target)) {
+      return null;
+    }
+    return everyBars - bar % everyBars;
+  }
+
+  /// A one-line progress report for the screen, e.g.
+  /// "104 → 140 BPM · next +4 in 2 bars".
+  String progress(int startBpm, int bar) {
+    if (!enabled) return '';
+    if (!movesFrom(startBpm)) {
+      return step == 0
+          ? 'Speed trainer: set a change other than 0 BPM.'
+          : 'Speed trainer: the target ($target BPM) is ${step > 0 ? 'not above' : 'not below'} the current tempo, so the tempo will stay put.';
+    }
+    final now = tempoFor(startBpm, bar);
+    final next = barsUntilNextStep(startBpm, bar);
+    if (next == null)
+      return 'Speed trainer: reached $target BPM. Holding here.';
+    final sign = step > 0 ? '+' : '−';
+    return 'Speed trainer: $now → $target BPM · next $sign${step.abs()} in $next bar${next == 1 ? '' : 's'}';
   }
 }
 
@@ -301,6 +339,9 @@ class Sequencer {
   /// The tempo the speed trainer counts up from.
   int get startBpm => _startBpm;
 
+  /// The bar the speed trainer started counting from.
+  int get startBar => _startBar;
+
   /// Start over from the top of bar 1, keeping the current tempo as the
   /// speed trainer's starting point.
   void reset() {
@@ -328,7 +369,9 @@ class Sequencer {
       groove.bpm = speed.tempoFor(_startBpm, _bar - _startBar);
     }
 
-    final voice = gap.isMuted(_bar) ? Voice.silent : groove.voiceAt(_cell, _sub);
+    final voice = gap.isMuted(_bar)
+        ? Voice.silent
+        : groove.voiceAt(_cell, _sub);
     final click = Click(_time, voice, _bar, _cell, _sub, groove.bpm);
 
     _time += groove.clickSeconds(_sub);

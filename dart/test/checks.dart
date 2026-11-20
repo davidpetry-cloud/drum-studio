@@ -120,6 +120,26 @@ void trainers() {
   check('slow down floor', down.tempoFor(100, 99), 60);
   check('speed off', SpeedTrainer().tempoFor(100, 99), 100);
 
+  // Starting on the wrong side of the target used to throw; now it holds.
+  final wrongWay = SpeedTrainer(enabled: true, step: 4, everyBars: 1, target: 140);
+  check('above target holds', wrongWay.tempoFor(160, 3), 160);
+  check('above target does not move', wrongWay.movesFrom(160), false);
+  check('slowing past target holds', SpeedTrainer(enabled: true, step: -5, everyBars: 1, target: 120).tempoFor(100, 4), 100);
+  check('at target holds', wrongWay.tempoFor(140, 9), 140);
+
+  // Progress line.
+  final p = SpeedTrainer(enabled: true, step: 4, everyBars: 4, target: 112);
+  check('next step at start', p.barsUntilNextStep(100, 0), 4);
+  check('next step mid-way', p.barsUntilNextStep(100, 6), 2);
+  check('progress text', p.progress(100, 6), 'Speed trainer: 104 → 112 BPM · next +4 in 2 bars');
+  check('progress one bar', p.progress(100, 3), 'Speed trainer: 100 → 112 BPM · next +4 in 1 bar');
+  check('progress reached', p.progress(100, 12), 'Speed trainer: reached 112 BPM. Holding here.');
+  check('next step none when reached', p.barsUntilNextStep(100, 12), null);
+  check('progress wrong way', wrongWay.progress(160, 0).contains('not above'), true);
+  check('progress off', SpeedTrainer().progress(100, 0), '');
+  check('slowing progress', SpeedTrainer(enabled: true, step: -10, everyBars: 2, target: 80).progress(100, 2),
+      'Speed trainer: 90 → 80 BPM · next −10 in 2 bars');
+
   final gap = GapTrainer(enabled: true, playBars: 2, muteBars: 1);
   check('gap pattern', [for (var b = 0; b < 6; b++) gap.isMuted(b)],
       [false, false, true, false, false, true]);

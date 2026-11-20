@@ -29,13 +29,16 @@ const _drumKey = 'ds-drum';
 
 /// Ranges read best as whole numbers; a reading keeps one decimal, because
 /// comparing lugs needs it.
-String _hz(double hz) => hz < 100 ? hz.toStringAsFixed(1) : hz.round().toString();
+String _hz(double hz) =>
+    hz < 100 ? hz.toStringAsFixed(1) : hz.round().toString();
 String _reading(double hz) => hz.toStringAsFixed(1);
 
 void _addOptions(Field select, Iterable<(String, String)> options) {
   select.replaceChildren();
   for (final (value, label) in options) {
-    select.appendChild(make('option', text: label)..setAttribute('value', value));
+    select.appendChild(
+      make('option', text: label)..setAttribute('value', value),
+    );
   }
 }
 
@@ -49,10 +52,12 @@ Element _cite(List<String> ids) {
     if (s == null) continue;
     if (!first) p.appendChild(make('span', text: ' · '));
     first = false;
-    p.appendChild(make('a', text: s.title)
-      ..setAttribute('href', s.url)
-      ..setAttribute('rel', 'noopener')
-      ..setAttribute('target', '_blank'));
+    p.appendChild(
+      make('a', text: s.title)
+        ..setAttribute('href', s.url)
+        ..setAttribute('rel', 'noopener')
+        ..setAttribute('target', '_blank'),
+    );
   }
   return p;
 }
@@ -60,11 +65,14 @@ Element _cite(List<String> ids) {
 void _renderSources() {
   final list = el<Element>('sources');
   for (final s in sources.values) {
-    list.appendChild(make('li')
-      ..appendChild(make('a', text: s.title)
-        ..setAttribute('href', s.url)
-        ..setAttribute('rel', 'noopener')
-        ..setAttribute('target', '_blank')));
+    list.appendChild(
+      make('li')..appendChild(
+        make('a', text: s.title)
+          ..setAttribute('href', s.url)
+          ..setAttribute('rel', 'noopener')
+          ..setAttribute('target', '_blank'),
+      ),
+    );
   }
 }
 
@@ -96,7 +104,9 @@ class Guide {
   String get drumName => '${_inches(diameter)} ${type.label.toLowerCase()}';
 
   void wire() {
-    _addOptions(typeSelect, [for (final t in DrumType.values) (t.name, t.label)]);
+    _addOptions(typeSelect, [
+      for (final t in DrumType.values) (t.name, t.label),
+    ]);
     _addOptions(materialSelect, [for (final m in materials) (m.id, m.label)]);
     _addOptions(batterSelect, [for (final h in batterHeads) (h.id, h.label)]);
     _addOptions(relationSelect, [for (final r in relations) (r.id, r.label)]);
@@ -116,16 +126,25 @@ class Guide {
       depth = num.tryParse(depthSelect.value) ?? type.typicalDepth;
       _update();
     });
-    for (final s in [materialSelect, batterSelect, resoSelect, relationSelect]) {
+    for (final s in [
+      materialSelect,
+      batterSelect,
+      resoSelect,
+      relationSelect,
+    ]) {
       on(s, 'change', _update);
     }
     _update();
   }
 
   void _fillSizes() {
-    _addOptions(sizeSelect, [for (final d in type.diameters) ('$d', '${_inches(d)} diameter')]);
+    _addOptions(sizeSelect, [
+      for (final d in type.diameters) ('$d', '${_inches(d)} diameter'),
+    ]);
     sizeSelect.value = '$diameter';
-    _addOptions(depthSelect, [for (final d in type.depths) ('$d', '${_inches(d)} deep')]);
+    _addOptions(depthSelect, [
+      for (final d in type.depths) ('$d', '${_inches(d)} deep'),
+    ]);
     depthSelect.value = '$depth';
     // Reso choices depend on the drum: port holes are for kicks, snare-side
     // heads for snares.
@@ -138,7 +157,11 @@ class Guide {
     ]);
     resoSelect.value = switch (type) {
       DrumType.snare => 'snare',
-      _ when current.isNotEmpty && current != 'snare' && (current != 'port' || type == DrumType.kick) => current,
+      _
+          when current.isNotEmpty &&
+              current != 'snare' &&
+              (current != 'port' || type == DrumType.kick) =>
+        current,
       _ => '1x',
     };
   }
@@ -153,7 +176,9 @@ class Guide {
     }
     type = DrumType.byName('${saved['type'] ?? 'snare'}');
     final d = saved['diameter'];
-    diameter = d is int && type.diameters.contains(d) ? d : type.typicalDiameter;
+    diameter = d is int && type.diameters.contains(d)
+        ? d
+        : type.typicalDiameter;
     final dp = saved['depth'];
     depth = dp is num && type.depths.contains(dp) ? dp : type.typicalDepth;
     typeSelect.value = type.name;
@@ -167,16 +192,24 @@ class Guide {
     pick(resoSelect, saved['reso']);
     pick(relationSelect, saved['relation']);
     // A value the select doesn't offer leaves it blank: fall back.
-    for (final f in [materialSelect, batterSelect, resoSelect, relationSelect]) {
-      if (f.value.isEmpty) f.value = ((f as JSObject)['options'] as JSObject)
-          .callMethod<Field>('item'.toJS, 0.toJS).value;
+    for (final f in [
+      materialSelect,
+      batterSelect,
+      resoSelect,
+      relationSelect,
+    ]) {
+      if (f.value.isEmpty)
+        f.value = ((f as JSObject)['options'] as JSObject)
+            .callMethod<Field>('item'.toJS, 0.toJS)
+            .value;
     }
   }
 
   void _update() {
     final r = range;
     title.textContent = titleCase('Starting range for a $drumName');
-    void show(Element e, double hz) => e.textContent = '${_hz(hz)} Hz · ${noteFor(hz).label}';
+    void show(Element e, double hz) =>
+        e.textContent = '${_hz(hz)} Hz · ${noteFor(hz).label}';
     show(low, r.low);
     show(medium, r.medium);
     show(high, r.high);
@@ -191,32 +224,44 @@ class Guide {
 
     notes.replaceChildren();
     void note(String heading, String body, List<String> cites) {
-      notes.appendChild(make('li', cls: 'note-card')
-        ..appendChild(make('h3', text: titleCase(heading)))
-        ..appendChild(make('p', text: body))
-        ..appendChild(cites.isEmpty ? make('span') : _cite(cites)));
+      notes.appendChild(
+        make('li', cls: 'note-card')
+          ..appendChild(make('h3', text: titleCase(heading)))
+          ..appendChild(make('p', text: body))
+          ..appendChild(cites.isEmpty ? make('span') : _cite(cites)),
+      );
     }
 
     note('Shell: ${material.label}', material.sound, material.sources);
-    note('Depth: ${_inches(depth)}', depthNote(type, depth), const ['yamahaSnare', 'md']);
+    note('Depth: ${_inches(depth)}', depthNote(type, depth), const [
+      'yamahaSnare',
+      'md',
+    ]);
     note('Batter head: ${batter.label}', batter.sound, batter.sources);
     note('Resonant head: ${reso.label}', reso.sound, reso.sources);
     if (type == DrumType.snare) {
       note('Batter and snare side', snareRelationNote, const []);
     } else {
-      note('Head relationship: ${relation.label}', relation.sound, relation.sources);
+      note(
+        'Head relationship: ${relation.label}',
+        relation.sound,
+        relation.sources,
+      );
     }
     el<Element>('relation-row').hidden = type == DrumType.snare;
 
-    saveText(_drumKey, jsonEncode({
-      'type': type.name,
-      'diameter': diameter,
-      'depth': depth,
-      'material': materialSelect.value,
-      'batter': batterSelect.value,
-      'reso': resoSelect.value,
-      'relation': relationSelect.value,
-    }));
+    saveText(
+      _drumKey,
+      jsonEncode({
+        'type': type.name,
+        'diameter': diameter,
+        'depth': depth,
+        'material': materialSelect.value,
+        'batter': batterSelect.value,
+        'reso': resoSelect.value,
+        'relation': relationSelect.value,
+      }),
+    );
     for (final l in listeners) {
       l();
     }
@@ -281,16 +326,26 @@ class Tuner {
   }
 
   Future<void> _start() async {
+    // Browsers only offer the microphone on secure (https) pages.
+    if (globalContext['isSecureContext'] case final JSBoolean secure
+        when !secure.toDart) {
+      _say(_micProblem('insecure'));
+      return;
+    }
     _say('Asking for the microphone…');
     try {
-      final constraints = {
-        'audio': {
-          'echoCancellation': false,
-          'noiseSuppression': false,
-          'autoGainControl': false,
-        },
-      }.jsify()! as JSObject;
-      final stream = await navigator.mediaDevices!.getUserMedia(constraints).toDart;
+      final constraints =
+          {
+                'audio': {
+                  'echoCancellation': false,
+                  'noiseSuppression': false,
+                  'autoGainControl': false,
+                },
+              }.jsify()!
+              as JSObject;
+      final stream = await navigator.mediaDevices!
+          .getUserMedia(constraints)
+          .toDart;
       final ctx = AudioContext();
       await ctx.resume().toDart;
       final source = ctx.createMediaStreamSource(stream);
@@ -316,10 +371,36 @@ class Tuner {
       _say('Tuner on. Tap the drum lightly about an inch from a tension rod.');
       _frame = requestAnimationFrame(_drawJs);
     } catch (e) {
-      _say('The microphone isn’t available. Check that this site is allowed to use it '
-          '(usually the icon by the address bar), then try again.');
+      _say(_micProblem(_errorName(e)));
     }
   }
+
+  /// The DOMException name ("NotAllowedError" and so on), if there is one.
+  static String? _errorName(Object error) {
+    try {
+      final name = (error as JSObject)['name'];
+      return name.isA<JSString>() ? (name as JSString).toDart : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// What went wrong and what to do about it, in plain words.
+  static String _micProblem(String? name) => switch (name) {
+    'NotAllowedError' || 'SecurityError' =>
+      'Microphone access is blocked for this site. '
+          'iPhone/iPad (Safari): tap the page-settings icon in the address bar, choose Website Settings, set Microphone to Allow. '
+          'Android (Chrome): tap the icon at the left of the address bar, open Permissions, allow Microphone. '
+          'Then press Start tuner again.',
+    'NotFoundError' || 'OverconstrainedError' =>
+      'No microphone was found. Connect one, or check that the device’s microphone is switched on, then press Start tuner again.',
+    'NotReadableError' || 'AbortError' =>
+      'The microphone is busy, probably in a call or another recording app. Close that app, then press Start tuner again.',
+    'insecure' =>
+      'The tuner needs a secure (https) page to use the microphone. Open the app from https://davidpetry-cloud.github.io/drum-studio/tuning.html.',
+    _ =>
+      'The microphone couldn’t start. Check that this site is allowed to use it (usually the icon by the address bar), then press Start tuner again.',
+  };
 
   void _stop() {
     _running = false;
@@ -346,11 +427,21 @@ class Tuner {
     wave.getFloatTimeDomainData(_samples.toJS);
     spectrum.getFloatFrequencyData(_db.toJS);
     final lvl = rms(_samples);
-    level.style.setProperty('--level', (lvl * 8).clamp(0, 1).toStringAsFixed(3));
-    final hz = peakHz(_db, sampleRate: ctx.sampleRate, fftSize: spectrum.fftSize,
-        minHz: 35, maxHz: 1200);
+    level.style.setProperty(
+      '--level',
+      (lvl * 8).clamp(0, 1).toStringAsFixed(3),
+    );
+    final hz = peakHz(
+      _db,
+      sampleRate: ctx.sampleRate,
+      fftSize: spectrum.fftSize,
+      minHz: 35,
+      maxHz: 1200,
+    );
     final reading = _hits.feed(level: lvl, hz: hz, nowMs: now);
-    listenState.textContent = _hits.listening ? 'Reading…' : 'Listening: tap the drum';
+    listenState.textContent = _hits.listening
+        ? 'Reading…'
+        : 'Listening: tap the drum';
     if (reading != null) _record(reading);
     _frame = requestAnimationFrame(_drawJs);
   }
@@ -367,7 +458,9 @@ class Tuner {
     if (_lugs.length > 12) _lugs.removeAt(0);
     _showLugs();
     _showTarget();
-    _say('${_reading(hz)} hertz, ${note.describe.replaceAll('♯', ' sharp').replaceAll('¢', ' cents').replaceAll('−', 'minus ')}.');
+    _say(
+      '${_reading(hz)} hertz, ${note.describe.replaceAll('♯', ' sharp').replaceAll('¢', ' cents').replaceAll('−', 'minus ')}.',
+    );
   }
 
   void _showLugs() {
@@ -379,32 +472,45 @@ class Tuner {
       final sign = off > 0 ? '+' : (off < 0 ? '−' : '±');
       final item = make('li', cls: 'lug')
         ..appendChild(make('span', cls: 'lug-n', text: 'Lug ${i + 1}'))
-        ..appendChild(make('span', cls: 'lug-hz', text: '${_reading(_lugs[i])} Hz'))
-        ..appendChild(make('span', cls: 'lug-off', text: _lugs.length > 1 ? '$sign${off.abs()}¢' : ''));
+        ..appendChild(
+          make('span', cls: 'lug-hz', text: '${_reading(_lugs[i])} Hz'),
+        )
+        ..appendChild(
+          make(
+            'span',
+            cls: 'lug-off',
+            text: _lugs.length > 1 ? '$sign${off.abs()}¢' : '',
+          ),
+        );
       if (check.worst == i) item.classList.add('is-worst');
       lugList.appendChild(item);
     }
     lugStatus.textContent = switch (_lugs.length) {
-      0 => 'Tap near each tension rod in turn. Readings appear here so you can compare them.',
+      0 =>
+        'Tap near each tension rod in turn. Readings appear here so you can compare them.',
       1 => 'One reading. Tap the next lug.',
       _ when check.isEven =>
         'Even: every lug is within ${LugCheck.evenCents}¢ of the middle reading (${_reading(check.center)} Hz).',
       _ => () {
-          final w = check.worst!;
-          final off = check.offsetsCents[w];
-          return 'Lug ${w + 1} is ${off.abs().round()}¢ ${off > 0 ? 'sharp: loosen it slightly' : 'flat: tighten it slightly'}, then tap it again.';
-        }(),
+        final w = check.worst!;
+        final off = check.offsetsCents[w];
+        return 'Lug ${w + 1} is ${off.abs().round()}¢ ${off > 0 ? 'sharp: loosen it slightly' : 'flat: tighten it slightly'}, then tap it again.';
+      }(),
     };
   }
 
   void _showTarget() {
     final r = guide.range;
-    targetLine.textContent = 'Target for your ${guide.drumName}: about ${_hz(r.low)} to ${_hz(r.high)} Hz '
+    targetLine.textContent =
+        'Target for your ${guide.drumName}: about ${_hz(r.low)} to ${_hz(r.high)} Hz '
         '(${noteFor(r.low).label} to ${noteFor(r.high).label}). Hit the centre to compare.';
     final last = _last;
     targetMark.hidden = last == null;
     if (last != null) {
-      targetMark.style.setProperty('--pos', r.position(last).clamp(-0.08, 1.08).toStringAsFixed(3));
+      targetMark.style.setProperty(
+        '--pos',
+        r.position(last).clamp(-0.08, 1.08).toStringAsFixed(3),
+      );
       targetMark.setAttribute('title', '${_reading(last)} Hz');
     }
   }
@@ -442,7 +548,11 @@ class Planner {
   final Element out = el('plan-out');
   final Element summary = el('plan-summary');
 
-  final _chosen = <(DrumType, int)>{(DrumType.rackTom, 10), (DrumType.rackTom, 12), (DrumType.floorTom, 16)};
+  final _chosen = <(DrumType, int)>{
+    (DrumType.rackTom, 10),
+    (DrumType.rackTom, 12),
+    (DrumType.floorTom, 16),
+  };
   var spacing = Spacing.same;
   var sameSemitones = 5;
 
@@ -462,10 +572,12 @@ class Planner {
           ..setAttribute('type', 'checkbox')
           ..setAttribute('id', id);
         box.checked = _chosen.contains((t, d));
-        sizes.appendChild(make('label', cls: 'chip-check')
-          ..setAttribute('for', id)
-          ..appendChild(box)
-          ..appendChild(make('span', text: _tomName(t, d))));
+        sizes.appendChild(
+          make('label', cls: 'chip-check')
+            ..setAttribute('for', id)
+            ..appendChild(box)
+            ..appendChild(make('span', text: _tomName(t, d))),
+        );
         on(box, 'change', () {
           box.checked ? _chosen.add((t, d)) : _chosen.remove((t, d));
           _build();
@@ -480,15 +592,19 @@ class Planner {
         ..setAttribute('id', id)
         ..setAttribute('value', sp.name);
       radio.checked = sp == spacing;
-      spacingBox.appendChild(make('label', cls: 'chip-check')
-        ..setAttribute('for', id)
-        ..appendChild(radio)
-        ..appendChild(make('span', text: sp.label)));
+      spacingBox.appendChild(
+        make('label', cls: 'chip-check')
+          ..setAttribute('for', id)
+          ..appendChild(radio)
+          ..appendChild(make('span', text: sp.label)),
+      );
       on(radio, 'change', () {
         if (radio.checked) _setSpacing(sp);
       });
     }
-    _addOptions(interval, [for (final i in intervals) ('${i.semitones}', i.label)]);
+    _addOptions(interval, [
+      for (final i in intervals) ('${i.semitones}', i.label),
+    ]);
     interval.value = '$sameSemitones';
     on(interval, 'change', () {
       sameSemitones = int.tryParse(interval.value) ?? 5;
@@ -514,7 +630,10 @@ class Planner {
   void _suggestTop() {
     final toms = _toms;
     if (toms.isEmpty) return;
-    top.value = rangeFor(toms.first.$1, toms.first.$2).medium.round().toString();
+    top.value = rangeFor(
+      toms.first.$1,
+      toms.first.$2,
+    ).medium.round().toString();
   }
 
   String _gapKey(int i) => '${_rows[i].id}>${_rows[i + 1].id}';
@@ -563,8 +682,9 @@ class Planner {
           ..setAttribute('inputmode', 'decimal')
           ..setAttribute('aria-label', 'Pitch for the $name tom, in hertz')
           ..className = 'plan-hz';
-        input.value = (_freeHz[row.id] ?? rangeFor(row.type, row.diameter).medium)
-            .toStringAsFixed(1);
+        input.value =
+            (_freeHz[row.id] ?? rangeFor(row.type, row.diameter).medium)
+                .toStringAsFixed(1);
         on(input, 'input', () {
           final hz = double.tryParse(input.value);
           if (hz != null) _freeHz[row.id] = hz;
@@ -582,7 +702,9 @@ class Planner {
             'aria-label',
             'Interval from the $name tom down to the ${_tomName(next.type, next.diameter)} tom',
           );
-        _addOptions(select, [for (final iv in intervals) ('${iv.semitones}', iv.label)]);
+        _addOptions(select, [
+          for (final iv in intervals) ('${iv.semitones}', iv.label),
+        ]);
         select.value = '${_gapAt(i)}';
         final index = i;
         on(select, 'change', () {
@@ -615,10 +737,13 @@ class Planner {
       case Spacing.perGap:
         final hz = _topHz;
         if (hz == null || _rows.length != toms.length) return null;
-        return planToms(toms, hz, [for (var i = 0; i + 1 < _rows.length; i++) _gapAt(i)]);
+        return planToms(toms, hz, [
+          for (var i = 0; i + 1 < _rows.length; i++) _gapAt(i),
+        ]);
       case Spacing.free:
         final hz = [
-          for (final r in _rows) _freeHz[r.id] ?? rangeFor(r.type, r.diameter).medium,
+          for (final r in _rows)
+            _freeHz[r.id] ?? rangeFor(r.type, r.diameter).medium,
         ];
         if (hz.any((h) => h < 30 || h > 1000)) return null;
         return planFree(toms, hz);
@@ -652,12 +777,16 @@ class Planner {
       r.noteCell.textContent = noteFor(p.hz).describe;
       if (r.gapSelect == null) {
         r.gapCell.textContent = i < gaps.length
-            ? (gaps[i] < 0 ? '${describeInterval(gaps[i])} (next tom is higher)' : describeInterval(gaps[i]))
+            ? (gaps[i] < 0
+                  ? '${describeInterval(gaps[i])} (next tom is higher)'
+                  : describeInterval(gaps[i]))
             : '—';
       }
       r.checkCell
         ..className = p.fits ? 'fits' : 'outside'
-        ..textContent = p.fits ? 'In range' : (p.hz > p.range.high ? 'Above range' : 'Below range');
+        ..textContent = p.fits
+            ? 'In range'
+            : (p.hz > p.range.high ? 'Above range' : 'Below range');
     }
     final outside = plan.where((p) => !p.fits).length;
     final inverted = gaps.where((g) => g < 0).length;
@@ -678,8 +807,10 @@ class Planner {
     final lower = plan.skip(1);
     final tooHigh = lower.any((p) => p.hz > p.range.high);
     final tooLow = lower.any((p) => p.hz < p.range.low);
-    if (tooHigh && !tooLow) return 'Try wider intervals, or a lower pitch on the smallest tom.';
-    if (tooLow && !tooHigh) return 'Try narrower intervals, or a higher pitch on the smallest tom.';
+    if (tooHigh && !tooLow)
+      return 'Try wider intervals, or a lower pitch on the smallest tom.';
+    if (tooLow && !tooHigh)
+      return 'Try narrower intervals, or a higher pitch on the smallest tom.';
     return 'Try a different pitch on the smallest tom, or adjust the intervals.';
   }
 
@@ -696,9 +827,12 @@ class Planner {
       for (final t in toms) {
         final parts = '$t'.split('-');
         if (parts.length != 2) continue;
-        final type = DrumType.values.where((x) => x.name == parts[0]).firstOrNull;
+        final type = DrumType.values
+            .where((x) => x.name == parts[0])
+            .firstOrNull;
         final d = int.tryParse(parts[1]);
-        if (type != null && d != null && type.diameters.contains(d)) picked.add((type, d));
+        if (type != null && d != null && type.diameters.contains(d))
+          picked.add((type, d));
       }
       if (picked.isNotEmpty) {
         _chosen
@@ -707,7 +841,8 @@ class Planner {
       }
     }
     spacing = Spacing.byName('${saved['spacing']}');
-    if (saved['interval'] case final int n when n >= 1 && n <= 12) sameSemitones = n;
+    if (saved['interval'] case final int n when n >= 1 && n <= 12)
+      sameSemitones = n;
     if (saved['top'] case final num hz) top.value = hz.toString();
     if (saved['gaps'] case final Map gaps) {
       gaps.forEach((k, v) {
@@ -721,12 +856,15 @@ class Planner {
     }
   }
 
-  void _save() => saveText(_planKey, jsonEncode({
-    'toms': [for (final (t, d) in _chosen) '${t.name}-$d'],
-    'spacing': spacing.name,
-    'interval': sameSemitones,
-    if (double.tryParse(top.value) case final hz?) 'top': hz,
-    'gaps': _gaps,
-    'free': _freeHz,
-  }));
+  void _save() => saveText(
+    _planKey,
+    jsonEncode({
+      'toms': [for (final (t, d) in _chosen) '${t.name}-$d'],
+      'spacing': spacing.name,
+      'interval': sameSemitones,
+      if (double.tryParse(top.value) case final hz?) 'top': hz,
+      'gaps': _gaps,
+      'free': _freeHz,
+    }),
+  );
 }

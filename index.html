@@ -152,6 +152,7 @@
         <fieldset class="trainer">
           <legend><label class="check"><input type="checkbox" id="speed-on"> Speed Trainer</label></legend>
           <p class="hint">Builds tempo a little at a time. Stopping returns to your starting tempo.</p>
+          <p class="trainer-progress" id="speed-progress" hidden></p>
           <div class="trio">
             <label class="field"><span class="label">Change by (BPM)</span><input type="number" id="speed-step" value="4" min="-50" max="50" inputmode="numeric"></label>
             <label class="field"><span class="label">Every (bars)</span><input type="number" id="speed-every" value="4" min="1" max="64" inputmode="numeric"></label>
@@ -185,6 +186,10 @@
           <h3 class="label">Yours</h3>
           <p class="hint" id="presets-empty">Nothing saved yet.</p>
           <ul class="presets" id="my-presets"></ul>
+          <div class="undo" id="preset-undo" hidden>
+            <span id="preset-undo-text"></span>
+            <button type="button" class="btn-ghost" id="preset-undo-btn">Undo</button>
+          </div>
         </div>
         <div>
           <h3 class="label">Starting Points</h3>
