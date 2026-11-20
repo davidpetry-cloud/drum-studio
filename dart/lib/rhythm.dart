@@ -300,7 +300,17 @@ class GapTrainer {
 
 /// One scheduled click.
 class Click {
-  const Click(this.at, this.voice, this.bar, this.cell, this.sub, this.bpm);
+  const Click(
+    this.at,
+    this.voice,
+    this.bar,
+    this.cell,
+    this.sub,
+    this.bpm, {
+    this.countIn = false,
+    this.count = 0,
+    this.countOf = 0,
+  });
 
   /// Seconds from the start of the run.
   final double at;
@@ -311,6 +321,16 @@ class Click {
 
   /// The tempo in force for this click (it changes under the speed trainer).
   final int bpm;
+
+  /// Part of the count-in before the groove. Count-in bars are numbered
+  /// below zero (-2, -1), so the groove's first bar is still bar 0.
+  final bool countIn;
+
+  /// For a count-in click: which count this is (1-based) and out of how
+  /// many in the bar, e.g. 2 of 4. Odd meters count their groups: 7/8 as
+  /// 2+2+3 counts 1, 2, 3.
+  final int count;
+  final int countOf;
 
   @override
   String toString() =>
@@ -331,6 +351,11 @@ class Sequencer {
 
   int _startBpm;
   int _startBar = 0;
+
+  /// Bars of count-in before the groove (0 for none); takes effect at
+  /// [reset].
+  int countInBars = 0;
+  int _countLeft = 0, _countIndex = 0;
   int _bar = 0, _cell = 0, _sub = 0;
   double _time = 0;
 
@@ -348,7 +373,12 @@ class Sequencer {
     _bar = _cell = _sub = _startBar = 0;
     _time = 0;
     _startBpm = groove.bpm;
+    _countIndex = 0;
+    _countLeft = math.max(0, countInBars) * groove.meter.groups.length;
   }
+
+  /// True while the count-in is still playing.
+  bool get countingIn => _countLeft > 0;
 
   /// The user moved the tempo by hand: the trainer starts again from there,
   /// counting bars from the next bar line.
@@ -358,6 +388,7 @@ class Sequencer {
   }
 
   Click next() {
+    if (_countLeft > 0) return _nextCount();
     // Settings may have changed since the last click.
     if (_cell >= groove.meter.beats) {
       _cell = 0;
@@ -386,6 +417,29 @@ class Sequencer {
     }
     return click;
   }
+
+  /// One count-in click: one per beat, or per group in grouped meters, at
+  /// the start of each group, the first of each bar accented.
+  Click _nextCount() {
+    final groups = groove.meter.groups;
+    final starts = groove.meter.groupStarts;
+    final g = _countIndex % groups.length;
+    final click = Click(
+      _time,
+      g == 0 ? Voice.accent : Voice.normal,
+      -countInBars + _countIndex ~/ groups.length,
+      starts[g],
+      0,
+      groove.bpm,
+      countIn: true,
+      count: g + 1,
+      countOf: groups.length,
+    );
+    _time += groove.cellSeconds * groups[g];
+    _countIndex++;
+    _countLeft--;
+    return click;
+  }
 }
 
 /// Turns taps into a tempo: the average gap over the last few taps. A pause
@@ -408,17 +462,37 @@ class TapTempo {
   }
 }
 
-/// The classical tempo word for a BPM, as a learning aid. Boundaries vary
+/// The classical tempo words and the BPM each starts at. Boundaries vary
 /// between sources; these are common modern ones.
-String tempoMarking(int bpm) => switch (bpm) {
-  < 40 => 'Grave',
-  < 60 => 'Largo',
-  < 66 => 'Larghetto',
-  < 76 => 'Adagio',
-  < 108 => 'Andante',
-  < 120 => 'Moderato',
-  < 156 => 'Allegro',
-  < 176 => 'Vivace',
-  < 200 => 'Presto',
-  _ => 'Prestissimo',
-};
+const tempoMarkings = [
+  (minBpm, 'Grave'),
+  (40, 'Largo'),
+  (60, 'Larghetto'),
+  (66, 'Adagio'),
+  (76, 'Andante'),
+  (108, 'Moderato'),
+  (120, 'Allegro'),
+  (156, 'Vivace'),
+  (176, 'Presto'),
+  (200, 'Prestissimo'),
+];
+
+int _markingIndex(int bpm) {
+  var i = 0;
+  while (i + 1 < tempoMarkings.length && bpm >= tempoMarkings[i + 1].$1) {
+    i++;
+  }
+  return i;
+}
+
+/// The classical tempo word for a BPM, as a learning aid.
+String tempoMarking(int bpm) => tempoMarkings[_markingIndex(bpm)].$2;
+
+/// The BPM range of that tempo word, e.g. (76, 107) for Andante.
+(int, int) tempoRange(int bpm) {
+  final i = _markingIndex(bpm);
+  final hi = i + 1 < tempoMarkings.length
+      ? tempoMarkings[i + 1].$1 - 1
+      : maxBpm;
+  return (tempoMarkings[i].$1, hi);
+}

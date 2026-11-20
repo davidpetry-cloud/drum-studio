@@ -68,6 +68,8 @@ class Metronome {
   final Element vibrateRow = el('vibrate-row');
   final Field vibrateBox = el('vibrate');
   final Field bigFlashBox = el('big-flash');
+  final Field countInSelect = el('count-in');
+  final Element tempoRangeEl = el('tempo-range');
   final Element status = el('status');
   final Element myList = el('my-presets');
   final Element myEmpty = el('presets-empty');
@@ -84,6 +86,7 @@ class Metronome {
   double subVolume = 0.6;
   bool haptics = false;
   bool bigFlash = false;
+  int countIn = 0; // bars of count-in before the groove
 
   // Audio state
   AudioContext? _ctx;
@@ -97,6 +100,8 @@ class Metronome {
   int? _flashTimer;
   final _queue = <(double, Click)>[];
   final _cells = <Element>[];
+  final _ticks = <List<Element>>[]; // per cell, one per subdivision
+  Element? _litTick;
   int _shownBpm = -1;
 
   final _taps = TapTempo();
@@ -158,6 +163,7 @@ class Metronome {
     on(subSelect, 'change', () {
       groove.sub = Subdivision.byName(subSelect.value);
       _showSwing();
+      _buildGrid();
       _save();
     });
     on(swingRange, 'input', () {
@@ -187,6 +193,10 @@ class Metronome {
         _savePrefs();
       });
     }
+    on(countInSelect, 'change', () {
+      countIn = (_int(countInSelect.value) ?? 0).clamp(0, 2);
+      _savePrefs();
+    });
     on(bigFlashBox, 'change', () {
       bigFlash = bigFlashBox.checked;
       _savePrefs();
@@ -265,6 +275,8 @@ class Metronome {
     bpmRange.value = '$bpm';
     if (!keepTyping) bpmInput.value = '$bpm';
     tempoWord.textContent = tempoMarking(bpm);
+    final (lo, hi) = tempoRange(bpm);
+    tempoRangeEl.textContent = '$lo–$hi BPM';
     quickBpm.textContent = '$bpm';
     final unit = groove.dottedBeat && groove.meter.isCompound
         ? 'dotted quarter'
@@ -339,6 +351,8 @@ class Metronome {
   void _buildGrid() {
     grid.replaceChildren();
     _cells.clear();
+    _ticks.clear();
+    _litTick = null;
     final starts = groove.meter.groupStarts.toSet();
     final grouped = !groove.meter.groups.every((g) => g == 1);
     for (var i = 0; i < groove.meter.beats; i++) {
@@ -351,6 +365,19 @@ class Metronome {
           make('span', cls: 'cell-mark')..setAttribute('aria-hidden', 'true'),
         )
         ..appendChild(make('span', cls: 'cell-level'));
+      // One small tick per subdivision, lit in time (seen as well as heard).
+      final ticks = <Element>[];
+      if (groove.sub.perBeat > 1) {
+        final row = make('span', cls: 'cell-subs')
+          ..setAttribute('aria-hidden', 'true');
+        for (var k = 0; k < groove.sub.perBeat; k++) {
+          final tick = make('span', cls: k == 0 ? 'tick is-beat' : 'tick');
+          row.appendChild(tick);
+          ticks.add(tick);
+        }
+        cell.appendChild(row);
+      }
+      _ticks.add(ticks);
       final index = i;
       on(cell, 'click', () {
         groove.levels[index] = groove.levels[index].next;
@@ -550,6 +577,7 @@ class Metronome {
           subVolume = v.clamp(0, 1).toDouble();
         haptics = prefs['haptics'] == true;
         bigFlash = prefs['bigFlash'] == true;
+        if (prefs['countIn'] case final int n) countIn = n.clamp(0, 2);
       }
     } on FormatException {
       // Ignore unreadable preferences.
@@ -567,6 +595,7 @@ class Metronome {
       'subVolume': subVolume,
       'haptics': haptics,
       'bigFlash': bigFlash,
+      'countIn': countIn,
     }),
   );
 
@@ -580,6 +609,7 @@ class Metronome {
     subVolumeRange.value = '${(subVolume * 100).round()}';
     vibrateBox.checked = haptics;
     bigFlashBox.checked = bigFlash;
+    countInSelect.value = '$countIn';
   }
 
   // ---- Keyboard -----------------------------------------------------------------
@@ -623,7 +653,9 @@ class Metronome {
     _out = ctx.createGain()..connect(ctx.destination);
     _out!.gain.value = volume;
     _running = true;
-    seq.reset();
+    seq
+      ..countInBars = countIn
+      ..reset();
     _queue.clear();
     _pending = null;
     _offset = ctx.currentTime + 0.08;
@@ -632,7 +664,11 @@ class Metronome {
     _frame = requestAnimationFrame(_drawJs);
     _showRunning(true);
     _wake.acquire();
-    _say('Playing at ${groove.bpm} BPM, ${groove.meter.label}.');
+    _say(
+      countIn > 0
+          ? 'Counting in $countIn bar${countIn == 1 ? '' : 's'}, then playing at ${groove.bpm} BPM, ${groove.meter.label}.'
+          : 'Playing at ${groove.bpm} BPM, ${groove.meter.label}.',
+    );
   }
 
   void _stop() {
@@ -811,12 +847,14 @@ class Metronome {
   void _draw(double _) {
     final ctx = _ctx;
     if (!_running || ctx == null) return;
-    Click? due;
+    Click? due, latest;
     while (_queue.isNotEmpty && _queue.first.$1 <= ctx.currentTime) {
       final click = _queue.removeAt(0).$2;
+      latest = click;
       if (click.sub == 0) due = click;
     }
     if (due != null) _light(due);
+    if (latest != null) _lightTick(latest);
     _frame = requestAnimationFrame(_drawJs);
   }
 
@@ -827,15 +865,19 @@ class Metronome {
       for (final c in _cells) {
         c.classList.toggle('is-on', false);
       }
+      _lightTick(null);
       flash.className = 'flash';
       position.textContent = 'Not playing';
       return;
     }
+    // The grid shows the groove, so it stays dark during the count-in.
     for (var i = 0; i < _cells.length; i++) {
-      _cells[i].classList.toggle('is-on', i == cell);
+      _cells[i].classList.toggle('is-on', !click.countIn && i == cell);
     }
-    final silentBar = gap.isMuted(click.bar);
-    position.textContent = silentBar
+    final silentBar = !click.countIn && gap.isMuted(click.bar);
+    position.textContent = click.countIn
+        ? 'Count-in · ${click.count} of ${click.countOf}'
+        : silentBar
         ? 'Bar ${click.bar + 1} · silent: keep the time going'
         : 'Bar ${click.bar + 1} · Beat ${cell + 1} of ${groove.meter.beats}';
     final kind = switch (click.voice) {
@@ -851,11 +893,24 @@ class Metronome {
     if (haptics && click.voice != Voice.silent) {
       vibrate(click.voice == Voice.accent ? 45 : 20);
     }
-    if (speed.enabled && click.cell == 0) _showSpeedProgress(click);
+    if (speed.enabled && click.cell == 0 && !click.countIn) {
+      _showSpeedProgress(click);
+    }
     // The speed trainer moves the tempo; follow it unless someone is typing.
     if (click.bpm != _shownBpm && document.activeElement != bpmInput) {
       _showTempo();
     }
+  }
+
+  /// Lights the subdivision tick for this click (none during the count-in).
+  void _lightTick(Click? click) {
+    _litTick?.classList.remove('is-on');
+    _litTick = null;
+    if (click == null || click.countIn) return;
+    if (click.cell >= _ticks.length) return;
+    final ticks = _ticks[click.cell];
+    if (click.sub >= ticks.length) return;
+    _litTick = ticks[click.sub]..classList.add('is-on');
   }
 
   // ---- Announcements ------------------------------------------------------------
