@@ -1,6 +1,6 @@
 # Bookmark: where Drum Studio stands
 
-**Saved:** 2026-11-20 (after PR #16, Phase 3 brainstorm) · **Owner:** David Petry
+**Saved:** 2026-11-20 (Phase 3 parked) · **Owner:** David Petry
 **To resume:** open a new Claude Code session on this repo and say
 *"Read docs/BOOKMARK.md and docs/ux-ui-audit-2026-11-20.md, then continue."*
 
@@ -65,9 +65,10 @@
      stop-time hits, ending after a set number of choruses. Mute any part, e.g. the drums.
    - **Sound test result:** fully synthesized instruments (walking bass, piano comping, ride)
      sounded **"too cheesy"**, so pure synthesis is ruled out.
-   - **Open decision:** A. freely licensed recorded instrument samples shipped with the app
-     (offline, ~5–15 MB, licences in THIRD-PARTY-NOTICES.md; new sound test first), or
-     B. park Phase 3. Then: design doc in `docs/superpowers/specs/`, plan, build.
+   - **Status: parked (David, 2026-11-20).** If it comes back, the remaining path is freely
+     licensed recorded instrument samples shipped with the app (offline, ~5–15 MB, licences in
+     THIRD-PARTY-NOTICES.md), a new sound test first, then a design doc in
+     `docs/superpowers/specs/`, a plan, and the build.
 3. **Real-device testing:** iPhone silent switch, Android vibration, tuner on a real drum, installing
    and using offline.
 4. **GitHub security switches (David, in Settings):** two-factor sign-in, secret scanning with
