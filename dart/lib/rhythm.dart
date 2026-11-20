@@ -483,19 +483,21 @@ class TapTempo {
   }
 }
 
-/// The classical tempo words and the BPM each starts at. Boundaries vary
-/// between sources; these are common modern ones.
+/// The classical tempo words, the BPM each starts at, and what the Italian
+/// means in English (with the literal sense where it differs), so the app
+/// teaches both languages. Boundaries vary between sources; these are
+/// common modern ones.
 const tempoMarkings = [
-  (minBpm, 'Grave'),
-  (40, 'Largo'),
-  (60, 'Larghetto'),
-  (66, 'Adagio'),
-  (76, 'Andante'),
-  (108, 'Moderato'),
-  (120, 'Allegro'),
-  (156, 'Vivace'),
-  (176, 'Presto'),
-  (200, 'Prestissimo'),
+  (minBpm, 'Grave', 'slow and solemn', 'serious, heavy'),
+  (40, 'Largo', 'slowly and broadly', 'broad'),
+  (60, 'Larghetto', 'fairly slowly and broadly', 'a little broad'),
+  (66, 'Adagio', 'slowly', 'at ease'),
+  (76, 'Andante', 'at a walking pace', 'walking'),
+  (108, 'Moderato', 'at a moderate speed', 'moderate'),
+  (120, 'Allegro', 'fast and bright', 'cheerful'),
+  (156, 'Vivace', 'lively and fast', 'lively'),
+  (176, 'Presto', 'very fast', 'quickly'),
+  (200, 'Prestissimo', 'as fast as possible', 'very quickly'),
 ];
 
 int _markingIndex(int bpm) {
@@ -506,8 +508,15 @@ int _markingIndex(int bpm) {
   return i;
 }
 
-/// The classical tempo word for a BPM, as a learning aid.
+/// The classical (Italian) tempo word for a BPM, as a learning aid.
 String tempoMarking(int bpm) => tempoMarkings[_markingIndex(bpm)].$2;
+
+/// The English meaning of that word, e.g. "at a walking pace (literally
+/// 'walking')" for Andante.
+String tempoMeaning(int bpm) {
+  final (_, _, meaning, literal) = tempoMarkings[_markingIndex(bpm)];
+  return '$meaning (literally “$literal”)';
+}
 
 /// The BPM range of that tempo word, e.g. (76, 107) for Andante.
 (int, int) tempoRange(int bpm) {

@@ -104,6 +104,9 @@ void rhythm() {
   check('marking edges', [tempoMarking(20), tempoMarking(75), tempoMarking(76), tempoMarking(300)],
       ['Grave', 'Adagio', 'Andante', 'Prestissimo']);
   check('range andante', tempoRange(96), (76, 107));
+  check('meaning andante', tempoMeaning(96), 'at a walking pace (literally “walking”)');
+  check('meaning allegro', tempoMeaning(130), 'fast and bright (literally “cheerful”)');
+  check('every word has a meaning', tempoMarkings.every((m) => m.$3.isNotEmpty && m.$4.isNotEmpty), true);
   // Classic metronome marks: 2s, 3s, 4s, 6s, 8s.
   for (final m in [40, 42, 58, 60, 63, 66, 69, 72, 76, 96, 100, 116, 120, 126, 132, 138, 144, 152, 200, 208]) {
     check('classic mark $m', classicMarks.contains(m), true);

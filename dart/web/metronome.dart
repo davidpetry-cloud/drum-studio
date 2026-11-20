@@ -70,6 +70,7 @@ class Metronome {
   final Field bigFlashBox = el('big-flash');
   final Field countInSelect = el('count-in');
   final Element tempoRangeEl = el('tempo-range');
+  final Element tempoMeaningEl = el('tempo-meaning');
   final Field markPrev = el('bpm-prev');
   final Field markNext = el('bpm-next');
   final Element status = el('status');
@@ -278,6 +279,7 @@ class Metronome {
     bpmRange.value = '$bpm';
     if (!keepTyping) bpmInput.value = '$bpm';
     tempoWord.textContent = tempoMarking(bpm);
+    tempoMeaningEl.textContent = tempoMeaning(bpm);
     final (lo, hi) = tempoRange(bpm);
     tempoRangeEl.textContent = '$lo–$hi BPM';
     // The mark buttons show where they'll go.

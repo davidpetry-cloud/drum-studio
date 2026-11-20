@@ -19,7 +19,7 @@
 - **Metronome:** 20–300 BPM, classic metronome-mark steps, tap tempo, any time signature with odd-meter groupings, dotted-quarter
   counting, subdivisions to 32nds with swing, per-beat accent/normal/ghost/mute, saved tempos plus
   starting points, speed and gap trainers, count-in (off/1/2 bars), subdivision ticks in the beat
-  grid, tempo word with its BPM range, three click sounds (woodblock, beep, stick), beat light,
+  grid, Italian tempo word with its English meaning and BPM range, three click sounds (woodblock, beep, stick), beat light,
   vibration (Android), screen wake lock, keyboard shortcuts.
 - **Drum Tuning:** guide by drum, size, depth, shell, heads and head relationship, with cited
   starting ranges; microphone tuner with lug-by-lug evenness check; tom planner with same, per-gap
