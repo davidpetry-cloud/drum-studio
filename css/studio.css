@@ -982,17 +982,13 @@ body.has-transport { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px
   .actions > * { flex: 1; }
 }
 @media (max-width: 560px) {
-  /* A compact header on phones: the controls matter more than the intro.
-     After the first visit the intro is still read by screen readers. */
+  /* A compact header on phones: the controls matter more than the eyebrow.
+     The intro always shows, so a page looks the same on every visit. */
   main { padding-top: 16px; }
   .pagehead { padding-top: 0; }
   .pagehead .eyebrow { display: none; }
   h1 { font-size: 36px; margin-bottom: 6px; }
   .byline { margin: 0 0 10px; }
-  .returning .pagehead .lede {
-    position: absolute; width: 1px; height: 1px; overflow: hidden;
-    clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
-  }
   .sources { gap: 14px; }
   .panel { padding: 20px 16px; }
   .panel::before { inset: 4px; }

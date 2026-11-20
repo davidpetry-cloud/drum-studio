@@ -3,7 +3,7 @@
    from the cache straight away, and refreshed from the network in the
    background, so an update shows up on the next visit.
    Bump VERSION when files are added or removed (see README). */
-const VERSION = 'ds-v1';
+const VERSION = 'ds-v2';
 const FILES = [
   './',
   './index.html',
