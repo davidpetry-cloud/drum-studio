@@ -67,6 +67,10 @@ class Metronome {
   final Element status = el('status');
   final Element myList = el('my-presets');
   final Element myEmpty = el('presets-empty');
+  final Element undoBar = el('preset-undo');
+  final Element undoText = el('preset-undo-text');
+  final Element undoButton = el('preset-undo-btn');
+  final Element speedProgress = el('speed-progress');
   final Element starterList = el('starter-presets');
   final Field presetName = el('preset-name');
 
@@ -96,6 +100,8 @@ class Metronome {
   int? _sayTimer;
   final _wake = WakeLock();
   List<Preset> _presets = [];
+  (int, Preset)? _lastDeleted; // for Undo: where it was, and what
+  int? _undoTimer;
 
   late final JSFunction _tickJs = _tick.toJS;
   late final JSFunction _drawJs = _draw.toJS;
@@ -190,18 +196,33 @@ class Metronome {
 
   void _fillSelects() {
     for (var n = 1; n <= Meter.maxBeats; n++) {
-      beatsSelect.appendChild(make('option', text: '$n')..setAttribute('value', '$n'));
+      beatsSelect.appendChild(
+        make('option', text: '$n')..setAttribute('value', '$n'),
+      );
     }
     for (final u in Meter.units) {
-      unitSelect.appendChild(make('option', text: '$u')..setAttribute('value', '$u'));
+      unitSelect.appendChild(
+        make('option', text: '$u')..setAttribute('value', '$u'),
+      );
     }
     for (final s in Subdivision.values) {
-      subSelect.appendChild(make('option', text: s.label)..setAttribute('value', s.name));
+      subSelect.appendChild(
+        make('option', text: s.label)..setAttribute('value', s.name),
+      );
     }
   }
 
   void _buildQuickMeters() {
-    for (final code in ['4/4', '3/4', '2/4', '5/4', '6/8', '7/8', '9/8', '12/8']) {
+    for (final code in [
+      '4/4',
+      '3/4',
+      '2/4',
+      '5/4',
+      '6/8',
+      '7/8',
+      '9/8',
+      '12/8',
+    ]) {
       final b = make('button', cls: 'chip', text: code)
         ..setAttribute('type', 'button')
         ..setAttribute('aria-label', 'Time signature $code');
@@ -223,6 +244,7 @@ class Metronome {
     groove.bpm = clampBpm(value);
     seq.retempo();
     _showTempo(keepTyping: keepTyping);
+    if (!_running) _showSpeedProgress();
     _save();
   }
 
@@ -252,7 +274,10 @@ class Metronome {
     }
     _setBpm(tempo);
     // Announce once the tapping settles, not on every tap.
-    _tapTimer = setTimeout((() => _say('Tempo set to ${groove.bpm} BPM.')).toJS, 900);
+    _tapTimer = setTimeout(
+      (() => _say('Tempo set to ${groove.bpm} BPM.')).toJS,
+      900,
+    );
   }
 
   // ---- Meter and accents ----------------------------------------------------------
@@ -280,15 +305,22 @@ class Metronome {
     groupsSelect.replaceChildren();
     for (final g in options) {
       groupsSelect.appendChild(
-        make('option', text: g.groups.every((x) => x == 1) ? 'Every beat' : g.groups.join(' + '))
-          ..setAttribute('value', g.code),
+        make(
+          'option',
+          text: g.groups.every((x) => x == 1)
+              ? 'Every beat'
+              : g.groups.join(' + '),
+        )..setAttribute('value', g.code),
       );
     }
     groupsSelect.value = m.code;
     dottedRow.hidden = !m.isCompound;
     dottedBox.checked = groove.dottedBeat;
     for (final chip in _children(quick)) {
-      chip.setAttribute('aria-pressed', '${chip.textContent == m.name && m.code == Meter.tryParse(m.name)?.code}');
+      chip.setAttribute(
+        'aria-pressed',
+        '${chip.textContent == m.name && m.code == Meter.tryParse(m.name)?.code}',
+      );
     }
   }
 
@@ -299,10 +331,13 @@ class Metronome {
     final grouped = !groove.meter.groups.every((g) => g == 1);
     for (var i = 0; i < groove.meter.beats; i++) {
       final cell = make('button', cls: 'cell')..setAttribute('type', 'button');
-      if (grouped && starts.contains(i) && i > 0) cell.classList.add('group-start');
+      if (grouped && starts.contains(i) && i > 0)
+        cell.classList.add('group-start');
       cell
         ..appendChild(make('span', cls: 'cell-num', text: '${i + 1}'))
-        ..appendChild(make('span', cls: 'cell-mark')..setAttribute('aria-hidden', 'true'))
+        ..appendChild(
+          make('span', cls: 'cell-mark')..setAttribute('aria-hidden', 'true'),
+        )
         ..appendChild(make('span', cls: 'cell-level'));
       final index = i;
       on(cell, 'click', () {
@@ -325,7 +360,10 @@ class Metronome {
       cell.classList.toggle('lv-${l.name}', l == level);
     }
     _children(cell)[2].textContent = level.label;
-    cell.setAttribute('aria-label', 'Beat ${i + 1}, ${level.label}. Press to change.');
+    cell.setAttribute(
+      'aria-label',
+      'Beat ${i + 1}, ${level.label}. Press to change.',
+    );
   }
 
   // ---- Subdivision and swing ------------------------------------------------
@@ -345,9 +383,13 @@ class Metronome {
   // ---- Trainers -------------------------------------------------------------
 
   void _wireTrainers() {
-    final Field speedOn = el('speed-on'), step = el('speed-step'),
-        every = el('speed-every'), target = el('speed-target');
-    final Field gapOn = el('gap-on'), play = el('gap-play'), mute = el('gap-mute');
+    final Field speedOn = el('speed-on'),
+        step = el('speed-step'),
+        every = el('speed-every'),
+        target = el('speed-target');
+    final Field gapOn = el('gap-on'),
+        play = el('gap-play'),
+        mute = el('gap-mute');
     void read() {
       speed
         ..enabled = speedOn.checked
@@ -359,12 +401,25 @@ class Metronome {
         ..playBars = (_int(play.value) ?? 2).clamp(1, 64)
         ..muteBars = (_int(mute.value) ?? 2).clamp(1, 64);
       seq.retempo();
+      _showSpeedProgress();
     }
 
     for (final f in [speedOn, step, every, target, gapOn, play, mute]) {
       on(f, 'change', read);
     }
     read();
+  }
+
+  /// "Speed trainer: 104 → 140 BPM · next +4 in 2 bars" while playing;
+  /// before a run, the same line counted from the current tempo.
+  void _showSpeedProgress([Click? click]) {
+    speedProgress.hidden = !speed.enabled;
+    if (!speed.enabled) return;
+    final bar = click == null ? 0 : math.max(0, click.bar - seq.startBar);
+    speedProgress.textContent = speed.progress(
+      click == null ? groove.bpm : seq.startBpm,
+      bar,
+    );
   }
 
   // ---- Presets ----------------------------------------------------------------
@@ -378,6 +433,7 @@ class Metronome {
         _savePreset();
       }).toJS,
     );
+    on(undoButton, 'click', _undoDelete);
     for (final p in starterPresets()) {
       starterList.appendChild(_presetRow(p, starter: true));
     }
@@ -389,7 +445,9 @@ class Metronome {
     if (name.isEmpty) {
       name = '${groove.bpm} BPM ${groove.meter.label}';
     }
-    final replacing = _presets.any((p) => p.name.toLowerCase() == name.toLowerCase());
+    final replacing = _presets.any(
+      (p) => p.name.toLowerCase() == name.toLowerCase(),
+    );
     _presets = upsert(_presets, Preset.of(name, groove));
     saveText(_presetsKey, encodePresets(_presets));
     presetName.value = '';
@@ -403,6 +461,42 @@ class Metronome {
       myList.appendChild(_presetRow(p));
     }
     myEmpty.hidden = _presets.isNotEmpty;
+  }
+
+  /// Deletes at once, but offers Undo for a few seconds.
+  void _delete(Preset p) {
+    final index = _presets.indexWhere((q) => q.name == p.name);
+    if (index < 0) return;
+    _presets = [..._presets]..removeAt(index);
+    saveText(_presetsKey, encodePresets(_presets));
+    _showPresets();
+    _lastDeleted = (index, p);
+    undoText.textContent = 'Deleted “${p.name}”.';
+    undoBar.hidden = false;
+    undoButton.focus();
+    _say('Deleted “${p.name}”. Press Undo to bring it back.');
+    if (_undoTimer case final id?) clearTimeout(id);
+    _undoTimer = setTimeout(_hideUndo.toJS, 10000);
+  }
+
+  void _undoDelete() {
+    final last = _lastDeleted;
+    if (last == null) return;
+    final (index, p) = last;
+    _presets = [..._presets]..insert(math.min(index, _presets.length), p);
+    saveText(_presetsKey, encodePresets(_presets));
+    _showPresets();
+    _hideUndo();
+    _say('Restored “${p.name}”.');
+  }
+
+  void _hideUndo() {
+    _lastDeleted = null;
+    if (_undoTimer case final id?) clearTimeout(id);
+    _undoTimer = null;
+    // Don't strand keyboard focus on a button that's about to vanish.
+    if (document.activeElement == undoButton) presetName.focus();
+    undoBar.hidden = true;
   }
 
   Element _presetRow(Preset p, {bool starter = false}) {
@@ -423,13 +517,7 @@ class Metronome {
       final del = make('button', cls: 'preset-del', text: '×')
         ..setAttribute('type', 'button')
         ..setAttribute('aria-label', 'Delete “${p.name}”');
-      on(del, 'click', () {
-        _presets = [for (final q in _presets) if (q.name != p.name) q];
-        saveText(_presetsKey, encodePresets(_presets));
-        _showPresets();
-        _say('Deleted “${p.name}”.');
-        presetName.focus();
-      });
+      on(del, 'click', () => _delete(p));
       row.appendChild(del);
     }
     return row;
@@ -443,9 +531,11 @@ class Metronome {
     try {
       final prefs = jsonDecode(loadText(_prefsKey) ?? '{}');
       if (prefs is Map) {
-        if (prefs['sound'] case final String s when _sounds.contains(s)) sound = s;
+        if (prefs['sound'] case final String s when _sounds.contains(s))
+          sound = s;
         if (prefs['volume'] case final num v) volume = v.clamp(0, 1).toDouble();
-        if (prefs['subVolume'] case final num v) subVolume = v.clamp(0, 1).toDouble();
+        if (prefs['subVolume'] case final num v)
+          subVolume = v.clamp(0, 1).toDouble();
         haptics = prefs['haptics'] == true;
         bigFlash = prefs['bigFlash'] == true;
       }
@@ -454,7 +544,8 @@ class Metronome {
     }
   }
 
-  void _save() => saveText(_lastKey, encodePresets([Preset.of('last', groove)]));
+  void _save() =>
+      saveText(_lastKey, encodePresets([Preset.of('last', groove)]));
 
   void _savePrefs() => saveText(
     _prefsKey,
@@ -488,7 +579,8 @@ class Metronome {
         if (e.ctrlKey || e.metaKey || e.altKey) return;
         final tag = e.target?.tagName ?? '';
         final typing = tag == 'INPUT' || tag == 'SELECT' || tag == 'TEXTAREA';
-        final onControl = typing || tag == 'BUTTON' || tag == 'A' || tag == 'SUMMARY';
+        final onControl =
+            typing || tag == 'BUTTON' || tag == 'A' || tag == 'SUMMARY';
         switch (e.key) {
           case ' ' when !onControl:
             e.preventDefault();
@@ -553,6 +645,7 @@ class Metronome {
       ..setAttribute('aria-pressed', 'false')
       ..classList.toggle('is-running', false);
     _showTempo();
+    _showSpeedProgress();
     _say(speed.enabled ? 'Stopped. You reached $reached BPM.' : 'Stopped.');
   }
 
@@ -610,7 +703,15 @@ class Metronome {
     final low = voice == Voice.sub;
     switch (sound) {
       case 'beep':
-        _tone(ctx, out, 'sine', high ? 1760 : (low ? 880 : 1320), level, at, 0.05);
+        _tone(
+          ctx,
+          out,
+          'sine',
+          high ? 1760 : (low ? 880 : 1320),
+          level,
+          at,
+          0.05,
+        );
       case 'stick':
         _noiseHit(ctx, out, high ? 3200 : (low ? 1800 : 2500), level * 1.4, at);
       default: // wood
@@ -625,8 +726,15 @@ class Metronome {
     }
   }
 
-  void _tone(AudioContext ctx, AudioNode out, String type, double hz, double level,
-      double at, double length) {
+  void _tone(
+    AudioContext ctx,
+    AudioNode out,
+    String type,
+    double hz,
+    double level,
+    double at,
+    double length,
+  ) {
     final osc = ctx.createOscillator()..type = type;
     final env = ctx.createGain();
     osc.frequency.value = hz;
@@ -639,7 +747,13 @@ class Metronome {
       ..stop(at + length + 0.01);
   }
 
-  void _noiseHit(AudioContext ctx, AudioNode out, double hz, double level, double at) {
+  void _noiseHit(
+    AudioContext ctx,
+    AudioNode out,
+    double hz,
+    double level,
+    double at,
+  ) {
     final buffer = _noise ??= _makeNoise(ctx);
     final src = ctx.createBufferSource()..buffer = buffer;
     final band = ctx.createBiquadFilter()..type = 'bandpass';
@@ -704,12 +818,14 @@ class Metronome {
       Voice.ghost => 'is-ghost',
       Voice.silent => 'is-silent',
     };
-    flash.className = 'flash $kind${bigFlash && click.voice != Voice.silent ? ' is-big' : ''}';
+    flash.className =
+        'flash $kind${bigFlash && click.voice != Voice.silent ? ' is-big' : ''}';
     if (_flashTimer case final id?) clearTimeout(id);
     _flashTimer = setTimeout((() => flash.classList.add('is-fading')).toJS, 90);
     if (haptics && click.voice != Voice.silent) {
       vibrate(click.voice == Voice.accent ? 45 : 20);
     }
+    if (speed.enabled && click.cell == 0) _showSpeedProgress(click);
     // The speed trainer moves the tempo; follow it unless someone is typing.
     if (click.bpm != _shownBpm && document.activeElement != bpmInput) {
       _showTempo();
@@ -729,7 +845,9 @@ class Metronome {
 List<Element> _children(Element e) {
   final list = (e as JSObject)['children'] as JSObject;
   final n = (list['length'] as JSNumber).toDartInt;
-  return [for (var i = 0; i < n; i++) list.callMethod<Element>('item'.toJS, i.toJS)];
+  return [
+    for (var i = 0; i < n; i++) list.callMethod<Element>('item'.toJS, i.toJS),
+  ];
 }
 
 /// The groupings offered for a meter: the default first, then other ways to

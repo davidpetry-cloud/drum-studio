@@ -47,8 +47,9 @@
 
 ## Next up (backlog)
 
-1. **UX audit fixes:** see `docs/ux-ui-audit-2026-11-20.md`. Start with the quick wins, then the
-   sticky phone transport bar and the tuning page tabs.
+1. **UX audit fixes:** see `docs/ux-ui-audit-2026-11-20.md`. Done: #3 undo delete, #6 trainer
+   progress, #8 mic messages. Next: the sticky phone transport bar (#1) and the tuning page
+   tabs (#2), then #4, #13, #12.
 2. **Phase 3: play-along grooves** (synthesized rock, bossa, songo, swing, clave) that follow the
    metronome's tempo, with voice muting.
 3. **Real-device testing:** iPhone silent switch, Android vibration, tuner on a real drum, installing
