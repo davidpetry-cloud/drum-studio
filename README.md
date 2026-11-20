@@ -29,7 +29,7 @@ credit David Petry; commercial use needs permission. Details in
   has its own shape as well as its own colour
 - Saved tempos (kept on the device), plus starting points
 - Speed trainer (raise the tempo every few bars) and gap trainer (muted bars)
-- Four click sounds, separate subdivision volume, a large beat light, optional
+- Three click sounds (woodblock, beep, stick click), separate subdivision volume, a large beat light, optional
   vibration (Android), keeps the screen awake while playing
 
 **Tuning** (`tuning.html`)
