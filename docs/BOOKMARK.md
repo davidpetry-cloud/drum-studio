@@ -1,6 +1,6 @@
 # Bookmark: where Drum Studio stands
 
-**Saved:** 2026-11-20 (after PR #14) · **Owner:** David Petry
+**Saved:** 2026-11-20 (after PR #15) · **Owner:** David Petry
 **To resume:** open a new Claude Code session on this repo and say
 *"Read docs/BOOKMARK.md and docs/ux-ui-audit-2026-11-20.md, then continue."*
 
@@ -65,6 +65,19 @@
    merge Dependabot pull requests when they appear.
 5. **Housekeeping:** optional USPTO search for the "Drum Studio" name. (Done: Pages actions
    moved to Node 24 versions by Dependabot, PR #9; About box and app URL set.)
+
+## Plugins worth using
+
+- **Before merging any new screen** (now a rule in both repos' `CLAUDE.md`): run
+  `design:accessibility-review` and `security-review`, and fix what they find.
+- **Phase 3 design:** `frontend-design`, `design:design-critique`, `design:ux-copy`.
+- **Practice content:** AudioPod stems (pull the drums out of a song) and MIDI (your playing into
+  notes), for personal practice only; never publish stems of copyrighted songs or put them in the app.
+  AudioPod, Develop21 and EasedUP don't connect from cloud sessions; use the desktop app or claude.ai.
+- **Lessons and the Exercises page:** education-agent-skills such as `spaced-practice-scheduler`,
+  `practice-problem-sequence-designer` and `worked-example-fading-designer`.
+- Skipped: audiorective (a second, npm-based audio engine would duplicate the Dart engine and add
+  third-party code); EasedUP (school curricula, not private drum teaching).
 
 ## Suggested model and effort
 
