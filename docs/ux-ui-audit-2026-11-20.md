@@ -31,17 +31,17 @@ expectation) · 🟢 low (polish). **Effort:** S (under an hour) · M (a few hou
 | 1 | ✅ 🔴 | Metronome, phone | **Start is below the first screen on every phone tested**: 16px (Pixel 7), 220px (iPhone 13), 376px (iPhone SE) below. The most-used button needs a scroll every session. *Heuristics: flexibility & efficiency; Fitts's law.* | Add a **sticky transport bar** at the bottom on phones: Start/Stop, BPM −/+, Tap. Bottom placement is also in easy thumb reach. | M |
 | 2 | ✅ 🔴 | Tuning, phone | **The tuner is ~1,600–1,800px down** (2+ screens) and the page is 7–9 screens long. At the kit, the job is "tap and read", but the form comes first. *Heuristics: match the real world; efficiency.* | Add **section tabs** at the top (Tuner · Your Drum · Planner · How-to) and put the tuner first, or keep a "Start tuner" shortcut in the header. | M |
 | 3 | ✅ 🔴 | Saved tempos | **Delete is instant with no undo** (tested: one tap removed the preset for good). *Heuristics: error prevention; help users recover.* | After deleting, show **"Deleted 'X' · Undo"** for about 8 seconds. | S |
-| 4 | 🟠 | Both pages, phone | The page header (eyebrow, title, byline, intro) fills **~55% of the first phone screen**. That's fine for a first visit, wasteful for a tool you open daily. *Heuristic: aesthetic & minimalist design.* | On phones, use a smaller title and show the intro only on the first visit (or as a one-line summary). | S |
-| 5 | 🟠 | Metronome | **No count-in.** Drummers expect a bar of clicks (or a spoken count) before the groove. *Heuristic: match the real world.* | Optional **count-in: off / 1 bar / 2 bars**, shown as "Count-in 1 2 3 4" in the beat light. | S–M |
+| 4 | ✅ 🟠 | Both pages, phone | The page header (eyebrow, title, byline, intro) fills **~55% of the first phone screen**. That's fine for a first visit, wasteful for a tool you open daily. *Heuristic: aesthetic & minimalist design.* | On phones, use a smaller title and show the intro only on the first visit (or as a one-line summary). | S |
+| 5 | ✅ 🟠 | Metronome | **No count-in.** Drummers expect a bar of clicks (or a spoken count) before the groove. *Heuristic: match the real world.* | Optional **count-in: off / 1 bar / 2 bars**, shown as "Count-in 1 2 3 4" in the beat light. | S–M |
 | 6 | ✅ 🟠 | Speed trainer | Progress is invisible apart from the BPM number changing. *Heuristic: visibility of system status.* | Show a line such as "Speed trainer: 104 → 140 BPM · next +4 in 2 bars". | S |
 | 7 | 🟠 | Tuner | Lug readings are numbered in tap order. One mis-tap shifts every lug after it, and the only fix is "Clear" (all). *Heuristic: user control & freedom.* | Let the user pick the lug count (6/8/10), tap a lug to re-read it, and remove a single reading. | M |
 | 8 | ✅ 🟠 | Tuner | One generic message covers every microphone problem. *Heuristic: help users recognise, diagnose and recover from errors.* | Separate messages for *permission denied* (with iPhone and Android steps), *no microphone found*, and *page not secure*. | S |
-| 9 | 🟠 | Beat grid | **Subdivisions aren't shown**, only beats light up, so 16ths and triplets are heard but not seen. This matters for hearing-impaired and visual learners. *Five senses: sight.* | Small sub-pulse ticks under each beat cell that light in time. | M |
+| 9 | ✅ 🟠 | Beat grid | **Subdivisions aren't shown**, only beats light up, so 16ths and triplets are heard but not seen. This matters for hearing-impaired and visual learners. *Five senses: sight.* | Small sub-pulse ticks under each beat cell that light in time. | M |
 | 10 | 🟠 | Install | The app can be installed, but nothing says so. *Heuristic: recognition rather than recall.* | An **"Install app"** button (Android/desktop Chrome) and a short "Add to Home Screen" tip for iPhone. | S–M |
 | 11 | 🟢 | Tempo slider | 20–300 BPM on a ~200px phone slider is ~1.4 BPM per pixel, so fine control is hard. The ± buttons help. | **Press-and-hold** on ± to repeat, and accelerate after a second. | S |
-| 12 | 🟢 | Sources list | Inline links are ~18px tall and stacked closely on phones. They pass WCAG's inline exception but are fiddly. | Add vertical spacing between source links on phones. | S |
-| 13 | 🟢 | Remembered settings | Users aren't told that tempo, accents and tuning choices are remembered. | A one-line note in the footer or hints: "Your settings are saved on this device." | S |
-| 14 | 🟢 | Tempo words | "Andante" is a nice learning aid, but its BPM range isn't shown. | Show the range on hover/tap ("Andante · 76–107 BPM"). | S |
+| 12 | ✅ 🟢 | Sources list | Inline links are ~18px tall and stacked closely on phones. They pass WCAG's inline exception but are fiddly. | Add vertical spacing between source links on phones. | S |
+| 13 | ✅ 🟢 | Remembered settings | Users aren't told that tempo, accents and tuning choices are remembered. | A one-line note in the footer or hints: "Your settings are saved on this device." | S |
+| 14 | ✅ 🟢 | Tempo words | "Andante" is a nice learning aid, but its BPM range isn't shown. | Show the range on hover/tap ("Andante · 76–107 BPM"). | S |
 
 ---
 
@@ -59,10 +59,11 @@ expectation) · 🟢 low (polish). **Effort:** S (under an hour) · M (a few hou
 ## Suggested order
 
 1. **Quick wins (S):** ~~#3 undo delete, #6 trainer progress, #8 mic messages~~ (done 2026-11-20; the speed-trainer
-   work also fixed a crash when the tempo started on the wrong side of the target), #4 compact phone header, #13, #12
+   work also fixed a crash when the tempo started on the wrong side of the target); #4 compact phone header,
+   #12 source spacing, #13 (the footers already said settings stay on the device), #14 tempo ranges (done)
 2. **Biggest impact (M):** ~~#1 sticky transport bar, #2 tuning page tabs~~ (done 2026-11-20: Start is on
    the first screen of every phone tested; the tuning page went from ~5,800px to ~1,700px on an iPhone 13)
-3. **Drummer features:** #5 count-in, #9 subdivision ticks, #7 per-lug tuner
+3. **Drummer features:** ~~#5 count-in, #9 subdivision ticks~~ (done), #7 per-lug tuner
 4. **Polish:** #10 install button, #11 hold-to-repeat, #14 tempo ranges
 
 Re-run the measurements after changes: Start must be visible on the first screen of an

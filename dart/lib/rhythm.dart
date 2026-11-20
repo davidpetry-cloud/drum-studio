@@ -10,6 +10,27 @@ const maxBpm = 300;
 
 int clampBpm(num bpm) => bpm.round().clamp(minBpm, maxBpm);
 
+/// The classic metronome marks, as printed on mechanical (Maelzel)
+/// metronomes: by 2 from 40 to 60, by 3 to 72, by 4 to 120, by 6 to 144 and
+/// by 8 to 208. Extended the same way at both ends to cover 20–300 BPM: by 2
+/// below 40 and by 8 above 208, ending at 300.
+final List<int> classicMarks = List.unmodifiable(<int>{
+  for (var b = minBpm; b < 60; b += 2) b,
+  for (var b = 60; b < 72; b += 3) b,
+  for (var b = 72; b < 120; b += 4) b,
+  for (var b = 120; b < 144; b += 6) b,
+  for (var b = 144; b <= maxBpm; b += 8) b,
+  maxBpm,
+});
+
+/// The next classic mark above [bpm] (or the top of the range).
+int nextMark(int bpm) =>
+    classicMarks.firstWhere((m) => m > bpm, orElse: () => maxBpm);
+
+/// The previous classic mark below [bpm] (or the bottom of the range).
+int previousMark(int bpm) =>
+    classicMarks.lastWhere((m) => m < bpm, orElse: () => minBpm);
+
 /// What each beat cell plays. Tapping a cell steps through these in order.
 enum Level {
   accent('Accent'),
@@ -300,7 +321,17 @@ class GapTrainer {
 
 /// One scheduled click.
 class Click {
-  const Click(this.at, this.voice, this.bar, this.cell, this.sub, this.bpm);
+  const Click(
+    this.at,
+    this.voice,
+    this.bar,
+    this.cell,
+    this.sub,
+    this.bpm, {
+    this.countIn = false,
+    this.count = 0,
+    this.countOf = 0,
+  });
 
   /// Seconds from the start of the run.
   final double at;
@@ -311,6 +342,16 @@ class Click {
 
   /// The tempo in force for this click (it changes under the speed trainer).
   final int bpm;
+
+  /// Part of the count-in before the groove. Count-in bars are numbered
+  /// below zero (-2, -1), so the groove's first bar is still bar 0.
+  final bool countIn;
+
+  /// For a count-in click: which count this is (1-based) and out of how
+  /// many in the bar, e.g. 2 of 4. Odd meters count their groups: 7/8 as
+  /// 2+2+3 counts 1, 2, 3.
+  final int count;
+  final int countOf;
 
   @override
   String toString() =>
@@ -331,6 +372,11 @@ class Sequencer {
 
   int _startBpm;
   int _startBar = 0;
+
+  /// Bars of count-in before the groove (0 for none); takes effect at
+  /// [reset].
+  int countInBars = 0;
+  int _countLeft = 0, _countIndex = 0;
   int _bar = 0, _cell = 0, _sub = 0;
   double _time = 0;
 
@@ -348,7 +394,12 @@ class Sequencer {
     _bar = _cell = _sub = _startBar = 0;
     _time = 0;
     _startBpm = groove.bpm;
+    _countIndex = 0;
+    _countLeft = math.max(0, countInBars) * groove.meter.groups.length;
   }
+
+  /// True while the count-in is still playing.
+  bool get countingIn => _countLeft > 0;
 
   /// The user moved the tempo by hand: the trainer starts again from there,
   /// counting bars from the next bar line.
@@ -358,6 +409,7 @@ class Sequencer {
   }
 
   Click next() {
+    if (_countLeft > 0) return _nextCount();
     // Settings may have changed since the last click.
     if (_cell >= groove.meter.beats) {
       _cell = 0;
@@ -386,6 +438,29 @@ class Sequencer {
     }
     return click;
   }
+
+  /// One count-in click: one per beat, or per group in grouped meters, at
+  /// the start of each group, the first of each bar accented.
+  Click _nextCount() {
+    final groups = groove.meter.groups;
+    final starts = groove.meter.groupStarts;
+    final g = _countIndex % groups.length;
+    final click = Click(
+      _time,
+      g == 0 ? Voice.accent : Voice.normal,
+      -countInBars + _countIndex ~/ groups.length,
+      starts[g],
+      0,
+      groove.bpm,
+      countIn: true,
+      count: g + 1,
+      countOf: groups.length,
+    );
+    _time += groove.cellSeconds * groups[g];
+    _countIndex++;
+    _countLeft--;
+    return click;
+  }
 }
 
 /// Turns taps into a tempo: the average gap over the last few taps. A pause
@@ -408,17 +483,46 @@ class TapTempo {
   }
 }
 
-/// The classical tempo word for a BPM, as a learning aid. Boundaries vary
-/// between sources; these are common modern ones.
-String tempoMarking(int bpm) => switch (bpm) {
-  < 40 => 'Grave',
-  < 60 => 'Largo',
-  < 66 => 'Larghetto',
-  < 76 => 'Adagio',
-  < 108 => 'Andante',
-  < 120 => 'Moderato',
-  < 156 => 'Allegro',
-  < 176 => 'Vivace',
-  < 200 => 'Presto',
-  _ => 'Prestissimo',
-};
+/// The classical tempo words, the BPM each starts at, and what the Italian
+/// means in English (with the literal sense where it differs), so the app
+/// teaches both languages. Boundaries vary between sources; these are
+/// common modern ones.
+const tempoMarkings = [
+  (minBpm, 'Grave', 'slow and solemn', 'serious, heavy'),
+  (40, 'Largo', 'slowly and broadly', 'broad'),
+  (60, 'Larghetto', 'fairly slowly and broadly', 'a little broad'),
+  (66, 'Adagio', 'slowly', 'at ease'),
+  (76, 'Andante', 'at a walking pace', 'walking'),
+  (108, 'Moderato', 'at a moderate speed', 'moderate'),
+  (120, 'Allegro', 'fast and bright', 'cheerful'),
+  (156, 'Vivace', 'lively and fast', 'lively'),
+  (176, 'Presto', 'very fast', 'quickly'),
+  (200, 'Prestissimo', 'as fast as possible', 'very quickly'),
+];
+
+int _markingIndex(int bpm) {
+  var i = 0;
+  while (i + 1 < tempoMarkings.length && bpm >= tempoMarkings[i + 1].$1) {
+    i++;
+  }
+  return i;
+}
+
+/// The classical (Italian) tempo word for a BPM, as a learning aid.
+String tempoMarking(int bpm) => tempoMarkings[_markingIndex(bpm)].$2;
+
+/// The English meaning of that word, e.g. "at a walking pace (literally
+/// 'walking')" for Andante.
+String tempoMeaning(int bpm) {
+  final (_, _, meaning, literal) = tempoMarkings[_markingIndex(bpm)];
+  return '$meaning (literally “$literal”)';
+}
+
+/// The BPM range of that tempo word, e.g. (76, 107) for Andante.
+(int, int) tempoRange(int bpm) {
+  final i = _markingIndex(bpm);
+  final hi = i + 1 < tempoMarkings.length
+      ? tempoMarkings[i + 1].$1 - 1
+      : maxBpm;
+  return (tempoMarkings[i].$1, hi);
+}

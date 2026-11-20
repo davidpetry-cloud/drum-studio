@@ -552,7 +552,23 @@ input[type="range"] { width: 100%; min-height: 44px; margin: 0; }
 .tempo-meta { display: grid; gap: 2px; }
 .tempo-word { color: var(--amber); font-family: var(--serif); font-style: italic; font-size: var(--fs-2xl); font-weight: 600; line-height: 1.1; }
 .tempo-unit { color: var(--muted2); font-size: var(--fs-sm); max-width: 22ch; }
-.slide { display: grid; grid-template-columns: auto auto 1fr auto auto; gap: 8px; align-items: center; }
+.tempo-meaning { color: var(--text); font-size: var(--fs-sm); font-style: italic; line-height: 1.35; max-width: 24ch; }
+.tempo-range { color: var(--muted2); font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.slide {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto auto;
+  grid-template-areas: "prev down range up next";
+  gap: 8px;
+  align-items: center;
+}
+#bpm-prev { grid-area: prev; }
+#bpm-down { grid-area: down; }
+#bpm-range { grid-area: range; }
+#bpm-up { grid-area: up; }
+#bpm-next { grid-area: next; }
+/* Classic-mark buttons show their target, e.g. "‹ 92" and "100 ›" */
+.mark-step { min-width: 64px; padding: 0 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.step:disabled { opacity: 0.45; cursor: default; }
 .step {
   min-width: 44px;
   height: 44px;
@@ -629,6 +645,12 @@ input[type="range"] { width: 100%; min-height: 44px; margin: 0; }
 .cell.is-on { border-color: var(--amber); box-shadow: 0 0 0 3px var(--amber-dim), inset 0 0 0 1px var(--amber); background: var(--amber-dim); }
 .cell-num { font-family: var(--mono); font-size: var(--fs-sm); color: var(--muted2); font-variant-numeric: tabular-nums; }
 .cell-level { font-size: 11px; font-family: var(--mono); letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted2); }
+/* Subdivision ticks: one per click in the beat, the one now sounding lit.
+   The first (the beat itself) is a little larger. */
+.cell-subs { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; max-width: 100%; }
+.tick { width: 5px; height: 5px; border-radius: 50%; background: var(--line-2); }
+.tick.is-beat { width: 7px; height: 7px; }
+.tick.is-on { background: var(--amber); box-shadow: 0 0 0 2px var(--amber-dim); }
 
 /* Shapes for the four levels (in cells and in the legend) */
 .cell-mark, .mark {
@@ -886,7 +908,7 @@ body.has-transport { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px
 .plan select { width: auto; min-width: 12.5em; }
 .steps { padding-left: 1.4em; display: grid; gap: 10px; max-width: 72ch; }
 .steps li::marker { color: var(--amber); font-family: var(--mono); }
-.sources { padding-left: 1.4em; display: grid; gap: 6px; margin-top: 12px; font-size: var(--fs-sm); }
+.sources { padding-left: 1.4em; display: grid; gap: 10px; margin-top: 12px; font-size: var(--fs-sm); line-height: 1.5; }
 
 /* ============================================================
    FOOTER
@@ -913,13 +935,28 @@ body.has-transport { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px
   .actions > * { flex: 1; }
 }
 @media (max-width: 560px) {
+  /* A compact header on phones: the controls matter more than the intro.
+     After the first visit the intro is still read by screen readers. */
+  main { padding-top: 16px; }
+  .pagehead { padding-top: 0; }
+  .pagehead .eyebrow { display: none; }
+  h1 { font-size: 36px; margin-bottom: 6px; }
+  .byline { margin: 0 0 10px; }
+  .returning .pagehead .lede {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+  }
+  .sources { gap: 14px; }
   .panel { padding: 20px 16px; }
   .panel::before { inset: 4px; }
   .brand { font-size: var(--fs-base); }
   .navlinks a { padding: 0 10px; }
   .bpm { font-size: 60px !important; min-height: 76px !important; }
-  .slide { grid-template-columns: auto 1fr auto; }
-  .slide #bpm-down-5, .slide #bpm-up-5 { display: none; }
+  /* Phones: fine ± around the slider, classic marks on their own row */
+  .slide {
+    grid-template-columns: 44px 1fr 1fr 44px;
+    grid-template-areas: "down range range up" "prev prev next next";
+  }
   .cell { width: 56px; }
   .cell.group-start { margin-left: 8px; }
   .range-stops dd { font-size: var(--fs-lg); }
@@ -946,5 +983,5 @@ body.has-transport { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px
   }
   .cell-mark::before, .mark::before, .cell-mark::after, .mark::after { forced-color-adjust: none; background: CanvasText; border-color: CanvasText; }
   .lv-ghost :is(.cell-mark)::before, .mark.lv-ghost::before { background: transparent; }
-  .needle, .target-mark, .level span { forced-color-adjust: none; background: Highlight; }
+  .needle, .target-mark, .level span, .tick.is-on { forced-color-adjust: none; background: Highlight; }
 }

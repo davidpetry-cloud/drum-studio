@@ -101,6 +101,34 @@ void rhythm() {
 
   check('marking', tempoMarking(120), 'Allegro');
   check('marking slow', tempoMarking(50), 'Largo');
+  check('marking edges', [tempoMarking(20), tempoMarking(75), tempoMarking(76), tempoMarking(300)],
+      ['Grave', 'Adagio', 'Andante', 'Prestissimo']);
+  check('range andante', tempoRange(96), (76, 107));
+  check('meaning andante', tempoMeaning(96), 'at a walking pace (literally “walking”)');
+  check('meaning allegro', tempoMeaning(130), 'fast and bright (literally “cheerful”)');
+  check('every word has a meaning', tempoMarkings.every((m) => m.$3.isNotEmpty && m.$4.isNotEmpty), true);
+  // Classic metronome marks: 2s, 3s, 4s, 6s, 8s.
+  for (final m in [40, 42, 58, 60, 63, 66, 69, 72, 76, 96, 100, 116, 120, 126, 132, 138, 144, 152, 200, 208]) {
+    check('classic mark $m', classicMarks.contains(m), true);
+  }
+  for (final m in [41, 61, 74, 98, 122, 148]) {
+    check('not a classic mark $m', classicMarks.contains(m), false);
+  }
+  check('marks run 20 to 300', (classicMarks.first, classicMarks.last), (20, 300));
+  check('marks ascend', [for (var i = 1; i < classicMarks.length; i++) classicMarks[i] > classicMarks[i - 1]].every((x) => x), true);
+  check('next from a mark', nextMark(96), 100);
+  check('next between marks', nextMark(98), 100);
+  check('previous between marks', previousMark(98), 96);
+  check('next across 60', nextMark(60), 63);
+  check('previous across 60', previousMark(60), 58);
+  check('next across 120', nextMark(120), 126);
+  check('next past 208', nextMark(208), 216);
+  check('next at top', nextMark(300), 300);
+  check('next near top', nextMark(299), 300);
+  check('previous at bottom', previousMark(20), 20);
+  check('previous near bottom', previousMark(21), 20);
+  check('range grave', tempoRange(20), (20, 39));
+  check('range top', tempoRange(250), (200, 300));
 
   final taps = TapTempo();
   check('one tap', taps.tap(0), null);
@@ -170,6 +198,44 @@ void sequencer() {
   s2.retempo();
   final after = [for (var i = 0; i < 4; i++) s2.next().bpm];
   check('retempo restarts trainer', after, [90, 90, 90, 120]);
+
+  // Count-in: one bar of 4/4 at 60 BPM, then the groove from bar 0.
+  final gc = Groove(bpm: 60, meter: Meter(4, 4), sub: Subdivision.eighths);
+  final sc = Sequencer(gc)..countInBars = 1;
+  sc.reset();
+  check('counting in', sc.countingIn, true);
+  final ci = [for (var i = 0; i < 6; i++) sc.next()];
+  check('count-in voices', [for (final c in ci.take(4)) c.voice],
+      [Voice.accent, Voice.normal, Voice.normal, Voice.normal]);
+  check('count-in numbers', [for (final c in ci.take(4)) '${c.count}/${c.countOf}'], ['1/4', '2/4', '3/4', '4/4']);
+  check('count-in skips subdivisions', [for (final c in ci.take(4)) c.sub], [0, 0, 0, 0]);
+  check('count-in bar is -1', ci[0].bar, -1);
+  near('groove starts after 4 beats', ci[4].at, 4);
+  check('groove starts at bar 0', (ci[4].bar, ci[4].countIn, ci[4].voice), (0, false, Voice.accent));
+  check('then subdivisions', ci[5].voice, Voice.sub);
+  check('done counting', sc.countingIn, false);
+
+  // Two bars of 7/8 (2+2+3) count the groups, unevenly spaced.
+  final g7 = Groove(bpm: 120, meter: Meter(7, 8));
+  final s7 = Sequencer(g7)..countInBars = 2;
+  s7.reset();
+  final c7 = [for (var i = 0; i < 7; i++) s7.next()];
+  check('7/8 count bars', [for (final c in c7.take(6)) c.bar], [-2, -2, -2, -1, -1, -1]);
+  check('7/8 count cells', [for (final c in c7.take(3)) c.cell], [0, 2, 4]);
+  near('7/8 group lengths', c7[2].at - c7[1].at, 1.0); // 2 eighths at 120
+  near('7/8 groove start', c7[6].at, 7.0); // 2 bars × 3.5 s
+  check('7/8 groove first', (c7[6].bar, c7[6].countIn), (0, false));
+
+  // The speed trainer counts from the groove's first bar, not the count-in.
+  final gs = Groove(bpm: 60, meter: Meter(1, 4));
+  final ss = Sequencer(gs, speed: SpeedTrainer(enabled: true, step: 10, everyBars: 1, target: 200))
+    ..countInBars = 1;
+  ss.reset();
+  check('trainer waits for count-in', [for (var i = 0; i < 3; i++) ss.next().bpm], [60, 60, 70]);
+
+  // No count-in by default.
+  final s0 = Sequencer(Groove())..reset();
+  check('no count-in', (s0.countingIn, s0.next().countIn), (false, false));
 
   // Gap trainer silences whole bars but keeps the timing.
   final g3 = Groove(bpm: 60, meter: Meter(1, 4));

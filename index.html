@@ -52,18 +52,20 @@
       <div class="tempo">
         <label for="bpm" class="label">Tempo</label>
         <div class="tempo-readout">
-          <input type="number" id="bpm" class="bpm" min="20" max="300" step="1" value="96" inputmode="numeric" aria-describedby="tempo-unit tempo-word">
+          <input type="number" id="bpm" class="bpm" min="20" max="300" step="1" value="96" inputmode="numeric" aria-describedby="tempo-word tempo-meaning tempo-range tempo-unit">
           <div class="tempo-meta">
-            <span class="tempo-word" id="tempo-word">Andante</span>
+            <span class="tempo-word" id="tempo-word" lang="it">Andante</span>
+            <span class="tempo-meaning" id="tempo-meaning">at a walking pace (literally “walking”)</span>
+            <span class="tempo-range" id="tempo-range">76–107 BPM</span>
             <span class="tempo-unit" id="tempo-unit">Beats per minute, counting each quarter note</span>
           </div>
         </div>
         <div class="slide">
-          <button type="button" class="step" id="bpm-down-5" aria-label="Slower by 5 BPM">−5</button>
+          <button type="button" class="step mark-step" id="bpm-prev" aria-label="Previous classic metronome mark: 92 BPM">‹ 92</button>
           <button type="button" class="step" id="bpm-down" aria-label="Slower by 1 BPM">−</button>
           <input type="range" id="bpm-range" min="20" max="300" step="1" value="96" aria-label="Tempo slider, 20 to 300 BPM">
           <button type="button" class="step" id="bpm-up" aria-label="Faster by 1 BPM">+</button>
-          <button type="button" class="step" id="bpm-up-5" aria-label="Faster by 5 BPM">+5</button>
+          <button type="button" class="step mark-step" id="bpm-next" aria-label="Next classic metronome mark: 100 BPM">100 ›</button>
         </div>
       </div>
 
@@ -120,6 +122,15 @@
           <label class="label" for="swing">Swing</label>
           <input type="range" id="swing" min="50" max="75" step="1" value="50" aria-describedby="swing-out">
           <output id="swing-out" for="swing" class="hint">Straight (50%)</output>
+        </div>
+        <div class="field">
+          <label class="label" for="count-in">Count-in</label>
+          <select id="count-in">
+            <option value="0">Off</option>
+            <option value="1">1 bar</option>
+            <option value="2">2 bars</option>
+          </select>
+          <p class="hint">Clicks the beats (or the groups in odd meters) before the groove starts. The trainers start counting after it.</p>
         </div>
       </section>
 
@@ -204,7 +215,7 @@
       <h2 id="keys-title">Keyboard</h2>
       <dl class="keylist">
         <div><dt><kbd>Space</kbd></dt><dd>Start or stop</dd></div>
-        <div><dt><kbd>↑</kbd> <kbd>↓</kbd></dt><dd>Tempo up or down 1 (hold <kbd>Shift</kbd> for 10)</dd></div>
+        <div><dt><kbd>↑</kbd> <kbd>↓</kbd></dt><dd>Tempo up or down 1 (hold <kbd>Shift</kbd> to jump to the next classic metronome mark)</dd></div>
         <div><dt><kbd>T</kbd></dt><dd>Tap tempo</dd></div>
       </dl>
     </section>

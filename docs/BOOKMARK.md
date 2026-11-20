@@ -16,9 +16,10 @@
 
 ## Built so far
 
-- **Metronome:** 20–300 BPM, tap tempo, any time signature with odd-meter groupings, dotted-quarter
+- **Metronome:** 20–300 BPM, classic metronome-mark steps, tap tempo, any time signature with odd-meter groupings, dotted-quarter
   counting, subdivisions to 32nds with swing, per-beat accent/normal/ghost/mute, saved tempos plus
-  starting points, speed and gap trainers, three click sounds (woodblock, beep, stick), beat light,
+  starting points, speed and gap trainers, count-in (off/1/2 bars), subdivision ticks in the beat
+  grid, Italian tempo word with its English meaning and BPM range, three click sounds (woodblock, beep, stick), beat light,
   vibration (Android), screen wake lock, keyboard shortcuts.
 - **Drum Tuning:** guide by drum, size, depth, shell, heads and head relationship, with cited
   starting ranges; microphone tuner with lug-by-lug evenness check; tom planner with same, per-gap
@@ -48,9 +49,9 @@
 
 ## Next up (backlog)
 
-1. **UX audit fixes:** see `docs/ux-ui-audit-2026-11-20.md`. Done: #1 quick-controls bar,
-   #2 tuning tabs, #3 undo delete, #6 trainer progress, #8 mic messages. Next: #4 compact phone
-   header, #5 count-in, #9 subdivision ticks, #7 per-lug tuner, then the rest.
+1. **UX audit fixes:** see `docs/ux-ui-audit-2026-11-20.md`. Done: #1–#6, #8, #9, #12–#14.
+   Left: #7 per-lug tuner (lug count, re-read one lug), #10 install button, #11 hold-to-repeat
+   on the ± buttons.
 2. **Phase 3: play-along grooves** (synthesized rock, bossa, songo, swing, clave) that follow the
    metronome's tempo, with voice muting.
 3. **Real-device testing:** iPhone silent switch, Android vibration, tuner on a real drum, installing
