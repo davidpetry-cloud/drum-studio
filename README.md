@@ -6,8 +6,14 @@ and works offline.
 
 **▶ Open the app: https://davidpetry-cloud.github.io/drum-studio/**
 
-© 2026 David Petry. All rights reserved. This is proprietary software (see
-[`LICENSE`](LICENSE)); third-party parts are listed in
+© 2026 David Petry. Built with the help of AI tools (Claude Code).
+
+**Collaboration welcome, with credit, for noncommercial use:** the code is
+under the [PolyForm Noncommercial License 1.0.0](LICENSES/PolyForm-Noncommercial-1.0.0.txt)
+and the writing, guide text, design and icons under
+[CC BY-NC 4.0](LICENSES/CC-BY-NC-4.0.txt). Keep the `Required Notice` line and
+credit David Petry; commercial use needs permission. Details in
+[`LICENSE`](LICENSE); third-party parts in
 [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md).
 
 ## What's in it

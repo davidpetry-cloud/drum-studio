@@ -1,35 +1,102 @@
-Drum Studio
-Copyright (c) 2026 David Petry. All rights reserved.
+Drum Studio: licence
+====================
 
-This repository and everything in it that David Petry created (the source
-code, the compiled code, the written content including the tuning guide
-text and descriptions, the design, the graphics and icons, and the name
-"Drum Studio" as used for this app) is proprietary and is the
-intellectual property of David Petry.
+Copyright (c) 2026 David Petry
+https://davidpetry-cloud.github.io/drum-studio/
 
-No licence is granted. Except where the law allows it without permission,
-you may not copy, modify, merge, publish, distribute, sublicense, sell,
-host or create derivative works from any part of this repository, in
-whole or in part, without David Petry's prior written permission.
+Drum Studio was conceived, designed and directed by David Petry and built
+with the help of AI tools (Claude Code). David Petry offers it under the
+licences below, to the full extent of the rights he holds in it.
 
-Viewing this repository on GitHub, and the copying that GitHub's Terms of
-Service allow on its own platform for public repositories, does not grant
-any other right. Using the published app at its official address for your
-own personal practice is permitted.
+In short: you are welcome to use, share, learn from and build on Drum
+Studio for any noncommercial purpose, as long as you credit David Petry.
+Commercial use needs his written permission.
 
-Third-party components are not covered by this notice. They keep their
-own licences, which are listed in THIRD-PARTY-NOTICES.md and included in
-full where those licences require it.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
+1. Which licence covers what
+----------------------------
 
-Pitch ranges and tuning advice are general starting points gathered from
-the published sources listed in the app. They are not guarantees about
-any particular instrument.
+CODE: PolyForm Noncommercial License 1.0.0
+  Everything that makes the app work: dart/, js/, css/, sw.js,
+  manifest.webmanifest, .github/, and the markup (the HTML structure) of
+  index.html and tuning.html. Parts of js/ that come from third parties
+  keep their own licences (section 5).
+  Full text: LICENSES/PolyForm-Noncommercial-1.0.0.txt
+  Online:    https://polyformproject.org/licenses/noncommercial/1.0.0
 
-For permission requests, contact David Petry through
+CONTENT: Creative Commons Attribution-NonCommercial 4.0 International
+(CC BY-NC 4.0)
+  The words and visuals: the text on the pages, the tuning guide's
+  descriptions and advice (including the text inside
+  dart/lib/tuning_data.dart), the README and other documentation, the
+  visual design, and the graphics and icons in icons/.
+  Full text: LICENSES/CC-BY-NC-4.0.txt
+  Online:    https://creativecommons.org/licenses/by-nc/4.0/
+
+Where content sits inside a code file, the content licence covers the
+content and the code licence covers the code.
+
+
+2. How to credit David Petry
+----------------------------
+
+Code: the PolyForm licence requires you to pass on this line with any
+copy of any part of the code, including changed versions:
+
+Required Notice: Copyright (c) 2026 David Petry (https://davidpetry-cloud.github.io/drum-studio/)
+
+Content: CC BY-NC 4.0 requires you to name the creator, link to the
+licence, and say whether you made changes. For example:
+
+  Based on "Drum Studio" by David Petry
+  (https://davidpetry-cloud.github.io/drum-studio/), licensed under
+  CC BY-NC 4.0 (https://creativecommons.org/licenses/by-nc/4.0/).
+  Changes: [what you changed].
+
+Where practical, please also credit David Petry wherever your work is
+shown, such as an About page, a credits screen or a description.
+
+
+3. Commercial use
+-----------------
+
+Anything these licences don't permit, including selling Drum Studio or
+work based on it, or using it to earn money, needs David Petry's prior
+written permission. For a commercial licence, contact him through
 https://david-petry.netlify.app/.
+
+
+4. Names and logo
+-----------------
+
+Neither licence grants any right to use the names "Drum Studio" or
+"David Petry" or the Drum Studio logo, except to give the credit in
+section 2. Please don't use them in a way that suggests David Petry made
+or endorses your version.
+
+
+5. Third-party components
+-------------------------
+
+The fonts (SIL Open Font License 1.1) and the Dart runtime compiled into
+js/ (BSD 3-Clause) are not covered by this file. They keep their own
+licences, listed in THIRD-PARTY-NOTICES.md.
+
+
+6. Contributions
+----------------
+
+If you send a change to this project (for example, a pull request), you
+confirm you have the right to do so, and you license your change to
+David Petry under the same licences as the part of the project it
+changes. You also permit David Petry to offer Drum Studio, including your
+change, under other terms, such as a commercial licence.
+
+
+7. No warranty
+--------------
+
+Drum Studio is provided "as is", without warranty of any kind, as set out
+in both licences. Pitch ranges and tuning advice are general starting
+points gathered from the published sources listed in the app. They are
+not guarantees about any particular instrument.
