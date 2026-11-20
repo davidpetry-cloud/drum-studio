@@ -9,6 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Drum Tuning · Drum Studio</title>
 <meta name="description" content="Tune your drums: a microphone tuner that reads each lug, starting pitch ranges by drum size, what shell materials and heads do, and a tom interval planner.">
+<meta name="author" content="David Petry">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#080a0e">
 <link rel="manifest" href="manifest.webmanifest">
@@ -34,6 +35,7 @@
   <header class="pagehead">
     <p class="eyebrow">Sound</p>
     <h1>Drum Tuning</h1>
+    <p class="byline">by <a href="https://david-petry.netlify.app/">David Petry</a></p>
     <p class="lede">Tell the guide about your drum to get a starting pitch range, then use the tuner to even out each lug. The numbers get you close. Your ears finish the job.</p>
   </header>
 
@@ -41,7 +43,7 @@
 
   <!-- Guide: your drum -->
   <section class="panel" id="guide" aria-labelledby="guide-title">
-    <h2 id="guide-title">Your drum</h2>
+    <h2 id="guide-title">Your Drum</h2>
     <div class="form-grid">
       <label class="field"><span class="label">Drum</span><select id="drum-type"></select></label>
       <label class="field"><span class="label">Size</span><select id="drum-size"></select></label>
@@ -53,7 +55,7 @@
     </div>
 
     <div class="range-card" aria-labelledby="range-title">
-      <h3 id="range-title">Starting range</h3>
+      <h3 id="range-title">Starting Range</h3>
       <dl class="range-stops">
         <div><dt>Low</dt><dd id="range-low">–</dd></div>
         <div><dt>Medium</dt><dd id="range-med">–</dd></div>
@@ -101,7 +103,7 @@
       </div>
 
       <div class="lugs-head">
-        <h3 class="label">Lug readings</h3>
+        <h3 class="label">Lug Readings</h3>
         <button type="button" class="link-btn" id="lugs-clear">Clear</button>
       </div>
       <ol class="lugs" id="lugs"></ol>
@@ -112,10 +114,10 @@
 
   <!-- Planner -->
   <section class="panel" id="planner" aria-labelledby="planner-title">
-    <h2 id="planner-title">Tom interval planner</h2>
+    <h2 id="planner-title">Tom Interval Planner</h2>
     <p class="hint">Spacing toms by a musical interval makes fills sound melodic, but it’s your kit: use one interval, a different one for each gap, or tune each tom freely and see what you get.</p>
     <fieldset class="field">
-      <legend class="label">Your toms</legend>
+      <legend class="label">Your Toms</legend>
       <div class="chips" id="plan-sizes"></div>
     </fieldset>
     <fieldset class="field">
@@ -145,7 +147,7 @@
 
   <!-- Method -->
   <section class="panel" aria-labelledby="steps-title">
-    <h2 id="steps-title">How to tune a head</h2>
+    <h2 id="steps-title">How to Tune a Head</h2>
     <ol class="steps">
       <li>Seat the head: press the centre firmly with your palm a few times so it settles on the bearing edge.</li>
       <li>Finger-tighten every rod evenly until each one just touches the hoop.</li>
