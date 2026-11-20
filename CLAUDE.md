@@ -21,5 +21,7 @@
 - Accessibility: every state shown by colour also has a shape or text, and
   controls are at least 44px tall. Announce changes through the page's
   `role="status"` region.
-- The project is proprietary (see `LICENSE`); don't add third-party code or
-  assets without recording their licence in `THIRD-PARTY-NOTICES.md`.
+- Licensing (see `LICENSE`): code is PolyForm Noncommercial 1.0.0, content
+  is CC BY-NC 4.0, both crediting David Petry. Keep the `Required Notice`
+  line intact. Don't add third-party code or assets without recording their
+  licence in `THIRD-PARTY-NOTICES.md`.

@@ -1,8 +1,9 @@
 # Third-party notices
 
-Drum Studio is proprietary (see `LICENSE`). It includes the third-party
-components below, which keep their own licences. Those licences apply only
-to these components, not to the rest of the repository.
+Drum Studio's own code and content are licensed as described in `LICENSE`
+(PolyForm Noncommercial 1.0.0 for code, CC BY-NC 4.0 for content). It also
+includes the third-party components below, which keep their own licences.
+Those licences apply only to these components.
 
 ## Fonts: SIL Open Font License 1.1
 

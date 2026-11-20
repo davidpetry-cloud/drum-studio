@@ -9,6 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Metronome · Drum Studio</title>
 <meta name="description" content="A drummer's metronome: time signatures, subdivisions, swing, accents and ghost notes on every beat, saved tempos, and speed and gap trainers. Works offline.">
+<meta name="author" content="David Petry">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#080a0e">
 <link rel="manifest" href="manifest.webmanifest">
@@ -34,6 +35,7 @@
   <header class="pagehead">
     <p class="eyebrow">Practice</p>
     <h1>Metronome</h1>
+    <p class="byline">by <a href="https://david-petry.netlify.app/">David Petry</a></p>
     <p class="lede">Set the tempo, pick a time signature, then tap any beat to make it an accent, a ghost note or a rest. Nothing plays until you press Start.</p>
   </header>
 
@@ -75,7 +77,7 @@
       <p class="status" id="status" role="status" aria-live="polite"></p>
 
       <div class="grid-head">
-        <h3 class="label" id="grid-title">Beats: tap to change</h3>
+        <h3 class="label" id="grid-title">Beats: Tap to Change</h3>
         <button type="button" class="link-btn" id="reset-accents">Reset accents</button>
       </div>
       <div class="grid" id="grid" role="group" aria-labelledby="grid-title"></div>
@@ -92,7 +94,7 @@
       <section class="panel" aria-labelledby="rhythm-title">
         <h2 id="rhythm-title">Rhythm</h2>
         <fieldset class="field">
-          <legend class="label">Time signature</legend>
+          <legend class="label">Time Signature</legend>
           <div class="chips" id="meter-quick"></div>
           <div class="meter-pick">
             <label class="visually-hidden" for="meter-beats">Beats per bar</label>
@@ -121,13 +123,12 @@
 
       <!-- Sound and feel -->
       <section class="panel" aria-labelledby="sound-title">
-        <h2 id="sound-title">Sound &amp; feel</h2>
+        <h2 id="sound-title">Sound &amp; Feel</h2>
         <div class="field">
           <label class="label" for="sound">Click sound</label>
           <select id="sound">
             <option value="wood">Woodblock</option>
             <option value="beep">Beep</option>
-            <option value="cowbell">Cowbell</option>
             <option value="stick">Stick click</option>
           </select>
         </div>
@@ -149,7 +150,7 @@
       <h2 id="trainers-title">Trainers</h2>
       <div class="columns">
         <fieldset class="trainer">
-          <legend><label class="check"><input type="checkbox" id="speed-on"> Speed trainer</label></legend>
+          <legend><label class="check"><input type="checkbox" id="speed-on"> Speed Trainer</label></legend>
           <p class="hint">Builds tempo a little at a time. Stopping returns to your starting tempo.</p>
           <div class="trio">
             <label class="field"><span class="label">Change by (BPM)</span><input type="number" id="speed-step" value="4" min="-50" max="50" inputmode="numeric"></label>
@@ -158,7 +159,7 @@
           </div>
         </fieldset>
         <fieldset class="trainer">
-          <legend><label class="check"><input type="checkbox" id="gap-on"> Gap trainer</label></legend>
+          <legend><label class="check"><input type="checkbox" id="gap-on"> Gap Trainer</label></legend>
           <p class="hint">Mutes some bars so you can check your inner clock. The beat light keeps going.</p>
           <div class="trio">
             <label class="field"><span class="label">Play (bars)</span><input type="number" id="gap-play" value="2" min="1" max="64" inputmode="numeric"></label>
@@ -170,7 +171,7 @@
 
     <!-- Saved tempos -->
     <section class="panel" aria-labelledby="presets-title">
-      <h2 id="presets-title">Saved tempos</h2>
+      <h2 id="presets-title">Saved Tempos</h2>
       <form id="preset-form" class="preset-form">
         <label class="label" for="preset-name">Name for the current settings</label>
         <div class="inline">
@@ -186,7 +187,7 @@
           <ul class="presets" id="my-presets"></ul>
         </div>
         <div>
-          <h3 class="label">Starting points</h3>
+          <h3 class="label">Starting Points</h3>
           <ul class="presets" id="starter-presets"></ul>
         </div>
       </div>
@@ -205,7 +206,8 @@
 
 <footer class="foot">
   <p>Drum Studio by <a href="https://david-petry.netlify.app/">David Petry</a> · <a href="https://david-petry.netlify.app/drum-exercises.html">Free drum exercises</a></p>
-  <p>Works offline once loaded. Your settings stay on this device. © 2026 David Petry. All rights reserved.</p>
+  <p>Works offline once loaded. Your settings stay on this device.</p>
+  <p>© 2026 David Petry. Free to share and build on for noncommercial use, with credit: <a href="https://github.com/davidpetry-cloud/drum-studio/blob/main/LICENSE">licence</a>.</p>
 </footer>
 <script src="js/metronome.js" defer></script>
 </body>

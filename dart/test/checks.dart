@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import 'package:drum_studio/pitch.dart';
 import 'package:drum_studio/presets.dart';
 import 'package:drum_studio/rhythm.dart';
+import 'package:drum_studio/titles.dart';
 import 'package:drum_studio/tuning_data.dart';
 
 var failures = 0;
@@ -34,6 +35,7 @@ void main() {
   presets();
   pitch();
   tuning();
+  titles();
   if (failures > 0) {
     stderr.writeln('$failures check(s) failed.');
     exit(1);
@@ -307,4 +309,20 @@ void tuning() {
 
   check('depth note shallow', depthNote(DrumType.snare, 3.5).startsWith('Shallower'), true);
   check('depth note typical', depthNote(DrumType.snare, 5).startsWith('A common'), true);
+}
+
+void titles() {
+  check('plain', titleCase('Your drum'), 'Your Drum');
+  check('minor words', titleCase('How to tune a head'), 'How to Tune a Head');
+  check('first word minor', titleCase('a snare'), 'A Snare');
+  check('last word minor', titleCase('what to listen for'), 'What to Listen For');
+  check('after colon', titleCase('Beats: tap to change'), 'Beats: Tap to Change');
+  check('hyphens', titleCase('Batter head: Single-ply, coated'), 'Batter Head: Single-Ply, Coated');
+  check('inches and brackets', titleCase('Starting range for a 22" bass drum (kick)'),
+      'Starting Range for a 22" Bass Drum (Kick)');
+  check('ampersand', titleCase('Sound & feel'), 'Sound & Feel');
+  check('keeps capitals', titleCase('Tempo in BPM'), 'Tempo in BPM');
+  check('minor word lowered', titleCase('Kick front head With a port hole'), 'Kick Front Head with a Port Hole');
+  check('numbers', titleCase('Depth: 5.5"'), 'Depth: 5.5"');
+  check('empty', titleCase(''), '');
 }

@@ -10,6 +10,7 @@ import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
 
 import 'package:drum_studio/pitch.dart';
+import 'package:drum_studio/titles.dart';
 import 'package:drum_studio/tuning_data.dart';
 
 import 'dom.dart';
@@ -174,7 +175,7 @@ class Guide {
 
   void _update() {
     final r = range;
-    title.textContent = 'Starting range for a $drumName';
+    title.textContent = titleCase('Starting range for a $drumName');
     void show(Element e, double hz) => e.textContent = '${_hz(hz)} Hz · ${noteFor(hz).label}';
     show(low, r.low);
     show(medium, r.medium);
@@ -191,7 +192,7 @@ class Guide {
     notes.replaceChildren();
     void note(String heading, String body, List<String> cites) {
       notes.appendChild(make('li', cls: 'note-card')
-        ..appendChild(make('h3', text: heading))
+        ..appendChild(make('h3', text: titleCase(heading)))
         ..appendChild(make('p', text: body))
         ..appendChild(cites.isEmpty ? make('span') : _cite(cites)));
     }

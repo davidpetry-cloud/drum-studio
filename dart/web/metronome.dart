@@ -584,7 +584,7 @@ class Metronome {
 
   // ---- Sounds -------------------------------------------------------------------
 
-  static const _sounds = ['wood', 'beep', 'cowbell', 'stick'];
+  static const _sounds = ['wood', 'beep', 'stick'];
 
   void _preview() {
     final ctx = _ctx ??= AudioContext();
@@ -611,15 +611,6 @@ class Metronome {
     switch (sound) {
       case 'beep':
         _tone(ctx, out, 'sine', high ? 1760 : (low ? 880 : 1320), level, at, 0.05);
-      case 'cowbell':
-        final k = high ? 1.25 : (low ? 0.85 : 1.0);
-        final band = ctx.createBiquadFilter()
-          ..type = 'bandpass'
-          ..connect(out);
-        band.frequency.value = 2400 * k;
-        band.Q.value = 1.2;
-        _tone(ctx, band, 'square', 540 * k, level * 0.5, at, 0.14);
-        _tone(ctx, band, 'square', 800 * k, level * 0.5, at, 0.14);
       case 'stick':
         _noiseHit(ctx, out, high ? 3200 : (low ? 1800 : 2500), level * 1.4, at);
       default: // wood
