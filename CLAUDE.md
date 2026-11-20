@@ -37,6 +37,9 @@ unless needed and pinned). Test like an attacker before shipping, document
 protections in `SECURITY.md`, and keep dependencies patched (Dependabot).
 Obscurity is never the protection.
 
+Before merging any new screen, run the accessibility-review and
+security-review skills and fix what they find.
+
 In this repo that means: keep `connect-src 'none'` and `script-src 'self'`
 in both pages' CSP; keep the tuner's protections (real tap only, no frames,
 auto-off, one audio channel) and update `SECURITY.md` if they change; review
