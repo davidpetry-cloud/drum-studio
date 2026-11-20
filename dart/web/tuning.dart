@@ -73,17 +73,20 @@ class Tabs {
     );
     list.hidden = false;
     final fromUrl = urlHash, saved = loadText(_key);
+    // Don't write the URL during loading: the browser would then scroll
+    // to that section and hide the tabs.
     select(
       ids.contains(fromUrl)
           ? fromUrl
           : (ids.contains(saved) ? saved! : 'tuner'),
+      updateUrl: false,
     );
     onWindow('hashchange', () {
       if (ids.contains(urlHash)) select(urlHash);
     });
   }
 
-  void select(String id, {bool focus = false}) {
+  void select(String id, {bool focus = false, bool updateUrl = true}) {
     for (var i = 0; i < ids.length; i++) {
       final on = ids[i] == id;
       _tabs[i]
@@ -92,7 +95,7 @@ class Tabs {
       _panels[i].hidden = !on;
     }
     saveText(_key, id);
-    replaceHash(id);
+    if (updateUrl) replaceHash(id);
     if (focus) _tabs[ids.indexOf(id)].focus();
     onChange(id);
   }

@@ -822,6 +822,9 @@ body.has-transport { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px
   text-underline-offset: 5px;
 }
 .stack { display: grid; gap: 24px; }
+/* A link straight to a tab (#planner …) scrolls with room for the nav and
+   the tabs above the section, so the tabs stay in view. */
+[role="tabpanel"] { scroll-margin-top: calc(var(--nav-h) + 84px); }
 #change-drum { margin-top: -4px; }
 
 .range-card {
