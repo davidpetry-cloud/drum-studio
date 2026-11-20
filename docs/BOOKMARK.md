@@ -1,6 +1,6 @@
 # Bookmark: where Drum Studio stands
 
-**Saved:** 2026-11-20 · **Owner:** David Petry
+**Saved:** 2026-11-20 (after PR #12) · **Owner:** David Petry
 **To resume:** open a new Claude Code session on this repo and say
 *"Read docs/BOOKMARK.md and docs/ux-ui-audit-2026-11-20.md, then continue."*
 
@@ -24,7 +24,8 @@
 - **Drum Tuning:** guide by drum, size, depth, shell, heads and head relationship, with cited
   starting ranges; microphone tuner with numbered lug slots (lug count per drum, tap a lug to
   re-read it, the one to adjust selected automatically); tom planner with same, per-gap
-  or free spacing.
+  or free spacing. Sections switch with four large icon buttons (Tuner, Your Drum, Planner,
+  How to Tune): 16px semibold Outfit, 52px tall, the selected one filled amber, 2×2 on phones.
 - **Everywhere:** installable and offline, light/dark themes, title-case headings, "by David Petry"
   byline, WCAG 2.2 AA (0 axe violations).
 
@@ -39,6 +40,7 @@
 | **Licensing:** code PolyForm Noncommercial 1.0.0, content CC BY-NC 4.0 | Noncommercial collaboration welcome with credit (`Required Notice:` line); commercial use needs permission. States AI assistance honestly; app name not claimed as copyright |
 | Website: code PolyForm NC, content all rights reserved | Code open to collaborate; PDFs, prompt book, art, photos and music stay protected |
 | Cowbell removed | David's call |
+| Security by default (both repos' `CLAUDE.md`) | Every future change: least privilege, strict CSP (`script-src 'self'`, `connect-src 'none'`), device access only after a real tap, Dependabot keeps dependencies patched. The website's inline scripts and Suno toolkit loader were fixed to match |
 | Microphone hardening (see `SECURITY.md`) | Real taps only, refused inside other sites' frames, auto-off (2 min idle, hidden page, other tab), minimal request, and `connect-src 'none'` so nothing can leave the page. Hiding code isn't real security; these are |
 
 ## How to change things
@@ -56,9 +58,11 @@
    metronome's tempo, with voice muting.
 3. **Real-device testing:** iPhone silent switch, Android vibration, tuner on a real drum, installing
    and using offline.
-4. **Housekeeping:** update the Pages actions when Node 24 versions ship (the run logs show a
-   Node 20 deprecation warning); optional USPTO search for the "Drum Studio" name; optional About
-   box on GitHub (website: the app URL; topics: drums, metronome, drum-tuning, pwa, dart).
+4. **GitHub security switches (David, in Settings):** two-factor sign-in, secret scanning with
+   push protection, private vulnerability reporting, and a ruleset protecting `main`. Review and
+   merge Dependabot pull requests when they appear.
+5. **Housekeeping:** optional USPTO search for the "Drum Studio" name. (Done: Pages actions
+   moved to Node 24 versions by Dependabot, PR #9; About box and app URL set.)
 
 ## Suggested model and effort
 
