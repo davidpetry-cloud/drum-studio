@@ -1,6 +1,6 @@
 # Bookmark: where Drum Studio stands
 
-**Saved:** 2026-11-20 (after PR #12) · **Owner:** David Petry
+**Saved:** 2026-11-20 (after PR #14) · **Owner:** David Petry
 **To resume:** open a new Claude Code session on this repo and say
 *"Read docs/BOOKMARK.md and docs/ux-ui-audit-2026-11-20.md, then continue."*
 
@@ -27,7 +27,8 @@
   or free spacing. Sections switch with four large icon buttons (Tuner, Your Drum, Planner,
   How to Tune): 16px semibold Outfit, 52px tall, the selected one filled amber, 2×2 on phones.
 - **Everywhere:** installable and offline, light/dark themes, title-case headings, "by David Petry"
-  byline, WCAG 2.2 AA (0 axe violations).
+  byline, WCAG 2.2 AA (0 axe violations). Each page looks the same on every visit (PR #14 fixed
+  the Metronome jumping about 115px on phones after a trip to Tuning). Offline cache: `ds-v2`.
 
 ## Decisions made (and why)
 
@@ -40,6 +41,7 @@
 | **Licensing:** code PolyForm Noncommercial 1.0.0, content CC BY-NC 4.0 | Noncommercial collaboration welcome with credit (`Required Notice:` line); commercial use needs permission. States AI assistance honestly; app name not claimed as copyright |
 | Website: code PolyForm NC, content all rights reserved | Code open to collaborate; PDFs, prompt book, art, photos and music stay protected |
 | Cowbell removed | David's call |
+| Intro always shows on phones (audit #4 revised) | Hiding it after the first visit made pages jump between visits. Consistency beats saving a few lines; the quick bar keeps Start on the first screen |
 | Security by default (both repos' `CLAUDE.md`) | Every future change: least privilege, strict CSP (`script-src 'self'`, `connect-src 'none'`), device access only after a real tap, Dependabot keeps dependencies patched. The website's inline scripts and Suno toolkit loader were fixed to match |
 | Microphone hardening (see `SECURITY.md`) | Real taps only, refused inside other sites' frames, auto-off (2 min idle, hidden page, other tab), minimal request, and `connect-src 'none'` so nothing can leave the page. Hiding code isn't real security; these are |
 
