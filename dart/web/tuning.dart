@@ -413,16 +413,47 @@ class Tuner {
 
 // ---- Tom interval planner ---------------------------------------------------------
 
+const _planKey = 'ds-plan';
+
+String _tomName(DrumType type, int diameter) =>
+    '${_inches(diameter)} ${type == DrumType.rackTom ? 'rack' : 'floor'}';
+
+/// One table row: the controls that stay put while you type, and the cells
+/// that get refreshed.
+class _PlanRow {
+  _PlanRow(this.type, this.diameter);
+  final DrumType type;
+  final int diameter;
+  String get id => '${type.name}-$diameter';
+  late final Element pitchCell, noteCell, gapCell, checkCell;
+  Field? pitchInput; // free tuning
+  Field? gapSelect; // custom per gap (not on the last tom)
+}
+
 class Planner {
   final Element sizes = el('plan-sizes');
+  final Element spacingBox = el('plan-spacing');
+  final Element spacingHint = el('plan-spacing-hint');
+  final Element intervalRow = el('plan-interval-row');
   final Field interval = el('plan-interval');
+  final Element topRow = el('plan-top-row');
   final Field top = el('plan-top');
   final Element out = el('plan-out');
   final Element summary = el('plan-summary');
+
   final _chosen = <(DrumType, int)>{(DrumType.rackTom, 10), (DrumType.rackTom, 12), (DrumType.floorTom, 16)};
-  final _boxes = <(DrumType, int), Field>{};
+  var spacing = Spacing.same;
+  var sameSemitones = 5;
+
+  /// Custom gaps, keyed "smallerId>largerId", so they survive adding toms.
+  final _gaps = <String, int>{};
+
+  /// Free-tuning pitches by tom id.
+  final _freeHz = <String, double>{};
+  final _rows = <_PlanRow>[];
 
   void wire() {
+    _restore();
     for (final t in [DrumType.rackTom, DrumType.floorTom]) {
       for (final d in t.diameters) {
         final id = 'plan-${t.name}-$d';
@@ -430,32 +461,54 @@ class Planner {
           ..setAttribute('type', 'checkbox')
           ..setAttribute('id', id);
         box.checked = _chosen.contains((t, d));
-        final label = make('label', cls: 'chip-check')
+        sizes.appendChild(make('label', cls: 'chip-check')
           ..setAttribute('for', id)
           ..appendChild(box)
-          ..appendChild(make('span', text: '${_inches(d)} ${t == DrumType.rackTom ? 'rack' : 'floor'}'));
+          ..appendChild(make('span', text: _tomName(t, d))));
         on(box, 'change', () {
           box.checked ? _chosen.add((t, d)) : _chosen.remove((t, d));
-          _update();
+          _build();
         });
-        _boxes[(t, d)] = box;
-        sizes.appendChild(label);
       }
     }
+    for (final sp in Spacing.values) {
+      final id = 'plan-spacing-${sp.name}';
+      final radio = make('input') as Field
+        ..setAttribute('type', 'radio')
+        ..setAttribute('name', 'plan-spacing')
+        ..setAttribute('id', id)
+        ..setAttribute('value', sp.name);
+      radio.checked = sp == spacing;
+      spacingBox.appendChild(make('label', cls: 'chip-check')
+        ..setAttribute('for', id)
+        ..appendChild(radio)
+        ..appendChild(make('span', text: sp.label)));
+      on(radio, 'change', () {
+        if (radio.checked) _setSpacing(sp);
+      });
+    }
     _addOptions(interval, [for (final i in intervals) ('${i.semitones}', i.label)]);
-    interval.value = '5';
-    on(interval, 'change', _update);
-    on(top, 'input', _update);
+    interval.value = '$sameSemitones';
+    on(interval, 'change', () {
+      sameSemitones = int.tryParse(interval.value) ?? 5;
+      _refresh();
+    });
+    on(top, 'input', _refresh);
     onId('plan-suggest', 'click', () {
       _suggestTop();
-      _update();
+      _refresh();
     });
-    _suggestTop();
-    _update();
+    if (top.value.isEmpty) _suggestTop();
+    _build();
   }
 
   List<(DrumType, int)> get _toms =>
       [..._chosen]..sort((a, b) => a.$2.compareTo(b.$2));
+
+  double? get _topHz {
+    final hz = double.tryParse(top.value);
+    return hz != null && hz >= 30 && hz <= 1000 ? hz : null;
+  }
 
   void _suggestTop() {
     final toms = _toms;
@@ -463,30 +516,216 @@ class Planner {
     top.value = rangeFor(toms.first.$1, toms.first.$2).medium.round().toString();
   }
 
-  void _update() {
+  String _gapKey(int i) => '${_rows[i].id}>${_rows[i + 1].id}';
+
+  int _gapAt(int i) => _gaps[_gapKey(i)] ?? sameSemitones;
+
+  void _setSpacing(Spacing next) {
+    // Carry the current pitches over, so switching modes never jumps.
+    final current = _plan();
+    if (next == Spacing.free && current != null) {
+      for (final p in current) {
+        _freeHz[p.id] = double.parse(p.hz.toStringAsFixed(1));
+      }
+    }
+    if (next == Spacing.perGap && spacing == Spacing.same) {
+      for (var i = 0; i + 1 < _rows.length; i++) {
+        _gaps.putIfAbsent(_gapKey(i), () => sameSemitones);
+      }
+    }
+    spacing = next;
+    _build();
+  }
+
+  /// Rebuilds the rows: only when the toms or the spacing mode change.
+  void _build() {
+    _rows
+      ..clear()
+      ..addAll([for (final (t, d) in _toms) _PlanRow(t, d)]);
     out.replaceChildren();
+    spacingHint.textContent = spacing.hint;
+    intervalRow.hidden = spacing != Spacing.same;
+    topRow.hidden = spacing == Spacing.free;
+
+    for (var i = 0; i < _rows.length; i++) {
+      final row = _rows[i];
+      final name = _tomName(row.type, row.diameter);
+      final tr = make('tr')
+        ..appendChild(make('th', text: name)..setAttribute('scope', 'row'));
+      row.pitchCell = make('td');
+      if (spacing == Spacing.free) {
+        final input = make('input') as Field
+          ..setAttribute('type', 'number')
+          ..setAttribute('min', '30')
+          ..setAttribute('max', '1000')
+          ..setAttribute('step', '0.1')
+          ..setAttribute('inputmode', 'decimal')
+          ..setAttribute('aria-label', 'Pitch for the $name tom, in hertz')
+          ..className = 'plan-hz';
+        input.value = (_freeHz[row.id] ?? rangeFor(row.type, row.diameter).medium)
+            .toStringAsFixed(1);
+        on(input, 'input', () {
+          final hz = double.tryParse(input.value);
+          if (hz != null) _freeHz[row.id] = hz;
+          _refresh();
+        });
+        row.pitchInput = input;
+        row.pitchCell.appendChild(input);
+      }
+      row.noteCell = make('td');
+      row.gapCell = make('td');
+      if (spacing == Spacing.perGap && i + 1 < _rows.length) {
+        final next = _rows[i + 1];
+        final select = make('select') as Field
+          ..setAttribute(
+            'aria-label',
+            'Interval from the $name tom down to the ${_tomName(next.type, next.diameter)} tom',
+          );
+        _addOptions(select, [for (final iv in intervals) ('${iv.semitones}', iv.label)]);
+        select.value = '${_gapAt(i)}';
+        final index = i;
+        on(select, 'change', () {
+          _gaps[_gapKey(index)] = int.tryParse(select.value) ?? 5;
+          _refresh();
+        });
+        row.gapSelect = select;
+        row.gapCell.appendChild(select);
+      }
+      row.checkCell = make('td');
+      tr
+        ..appendChild(row.pitchCell)
+        ..appendChild(row.noteCell)
+        ..appendChild(row.gapCell)
+        ..appendChild(row.checkCell);
+      out.appendChild(tr);
+    }
+    _refresh();
+  }
+
+  /// The plan for the current mode, or null while an entry is missing or
+  /// out of bounds.
+  List<PlannedDrum>? _plan() {
     final toms = _toms;
-    final hz = double.tryParse(top.value);
-    if (toms.isEmpty || hz == null || hz < 30 || hz > 1000) {
-      summary.textContent = toms.isEmpty
+    if (toms.isEmpty) return null;
+    switch (spacing) {
+      case Spacing.same:
+        final hz = _topHz;
+        return hz == null ? null : planSame(toms, hz, sameSemitones);
+      case Spacing.perGap:
+        final hz = _topHz;
+        if (hz == null || _rows.length != toms.length) return null;
+        return planToms(toms, hz, [for (var i = 0; i + 1 < _rows.length; i++) _gapAt(i)]);
+      case Spacing.free:
+        final hz = [
+          for (final r in _rows) _freeHz[r.id] ?? rangeFor(r.type, r.diameter).medium,
+        ];
+        if (hz.any((h) => h < 30 || h > 1000)) return null;
+        return planFree(toms, hz);
+    }
+  }
+
+  /// Updates the numbers without touching the controls being used.
+  void _refresh() {
+    _save();
+    final plan = _plan();
+    if (plan == null) {
+      for (final r in _rows) {
+        if (r.pitchInput == null) r.pitchCell.textContent = '–';
+        r.noteCell.textContent = '–';
+        if (r.gapSelect == null) r.gapCell.textContent = '';
+        r.checkCell
+          ..textContent = ''
+          ..className = '';
+      }
+      summary.textContent = _rows.isEmpty
           ? 'Pick at least one tom.'
+          : spacing == Spacing.free
+          ? 'Enter a pitch between 30 and 1000 Hz for every tom.'
           : 'Enter a pitch for your smallest tom, between 30 and 1000 Hz.';
       return;
     }
-    final plan = planToms(toms, hz, int.tryParse(interval.value) ?? 5);
-    for (final p in plan) {
-      final row = make('tr')
-        ..appendChild(make('th', text: '${_inches(p.diameter)} ${p.type == DrumType.rackTom ? 'rack' : 'floor'}')
-          ..setAttribute('scope', 'row'))
-        ..appendChild(make('td', text: '${_hz(p.hz)} Hz'))
-        ..appendChild(make('td', text: noteFor(p.hz).label))
-        ..appendChild(make('td', cls: p.fits ? 'fits' : 'outside',
-            text: p.fits ? 'In range' : (p.hz > p.range.high ? 'Above range' : 'Below range')));
-      out.appendChild(row);
+    final gaps = gapsBetween(plan);
+    for (var i = 0; i < plan.length; i++) {
+      final p = plan[i], r = _rows[i];
+      if (r.pitchInput == null) r.pitchCell.textContent = '${_hz(p.hz)} Hz';
+      r.noteCell.textContent = noteFor(p.hz).describe;
+      if (r.gapSelect == null) {
+        r.gapCell.textContent = i < gaps.length
+            ? (gaps[i] < 0 ? '${describeInterval(gaps[i])} (next tom is higher)' : describeInterval(gaps[i]))
+            : '—';
+      }
+      r.checkCell
+        ..className = p.fits ? 'fits' : 'outside'
+        ..textContent = p.fits ? 'In range' : (p.hz > p.range.high ? 'Above range' : 'Below range');
     }
     final outside = plan.where((p) => !p.fits).length;
-    summary.textContent = outside == 0
-        ? 'Every tom lands inside its starting range.'
-        : '$outside ${outside == 1 ? 'tom lands' : 'toms land'} outside the starting range. Try a smaller interval or a different top pitch.';
+    final inverted = gaps.where((g) => g < 0).length;
+    final parts = [
+      outside == 0
+          ? 'Every tom lands inside its starting range.'
+          : '$outside ${outside == 1 ? 'tom lands' : 'toms land'} outside its starting range.',
+      if (inverted > 0)
+        '$inverted ${inverted == 1 ? 'larger tom is' : 'larger toms are'} tuned higher than the tom above.',
+      if (outside > 0 && spacing != Spacing.free) _advice(plan),
+    ];
+    summary.textContent = parts.join(' ');
   }
+
+  /// What to change when toms fall outside their ranges: lower toms that sit
+  /// too high need wider intervals, ones that sit too low need narrower ones.
+  String _advice(List<PlannedDrum> plan) {
+    final lower = plan.skip(1);
+    final tooHigh = lower.any((p) => p.hz > p.range.high);
+    final tooLow = lower.any((p) => p.hz < p.range.low);
+    if (tooHigh && !tooLow) return 'Try wider intervals, or a lower pitch on the smallest tom.';
+    if (tooLow && !tooHigh) return 'Try narrower intervals, or a higher pitch on the smallest tom.';
+    return 'Try a different pitch on the smallest tom, or adjust the intervals.';
+  }
+
+  void _restore() {
+    Map<Object?, Object?> saved = {};
+    try {
+      final data = jsonDecode(loadText(_planKey) ?? '{}');
+      if (data is Map) saved = data;
+    } on FormatException {
+      return;
+    }
+    if (saved['toms'] case final List toms) {
+      final picked = <(DrumType, int)>{};
+      for (final t in toms) {
+        final parts = '$t'.split('-');
+        if (parts.length != 2) continue;
+        final type = DrumType.values.where((x) => x.name == parts[0]).firstOrNull;
+        final d = int.tryParse(parts[1]);
+        if (type != null && d != null && type.diameters.contains(d)) picked.add((type, d));
+      }
+      if (picked.isNotEmpty) {
+        _chosen
+          ..clear()
+          ..addAll(picked);
+      }
+    }
+    spacing = Spacing.byName('${saved['spacing']}');
+    if (saved['interval'] case final int n when n >= 1 && n <= 12) sameSemitones = n;
+    if (saved['top'] case final num hz) top.value = hz.toString();
+    if (saved['gaps'] case final Map gaps) {
+      gaps.forEach((k, v) {
+        if (v is int && v >= 1 && v <= 12) _gaps['$k'] = v;
+      });
+    }
+    if (saved['free'] case final Map free) {
+      free.forEach((k, v) {
+        if (v is num) _freeHz['$k'] = v.toDouble();
+      });
+    }
+  }
+
+  void _save() => saveText(_planKey, jsonEncode({
+    'toms': [for (final (t, d) in _chosen) '${t.name}-$d'],
+    'spacing': spacing.name,
+    'interval': sameSemitones,
+    if (double.tryParse(top.value) case final hz?) 'top': hz,
+    'gaps': _gaps,
+    'free': _freeHz,
+  }));
 }

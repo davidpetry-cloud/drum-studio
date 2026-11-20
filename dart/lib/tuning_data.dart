@@ -292,18 +292,66 @@ const snareRelationNote =
 
 // ---- Tom interval planner ----------------------------------------------------
 
+/// How the planner spaces the toms.
+enum Spacing {
+  same('Same interval', 'Every tom the same interval below the one above it.'),
+  perGap('Custom per gap', 'Choose the interval between each pair of neighbouring toms.'),
+  free('Free tuning', 'Type each tom’s pitch. Nothing is enforced; the planner shows the intervals you end up with.');
+
+  const Spacing(this.label, this.hint);
+  final String label;
+  final String hint;
+
+  static Spacing byName(String name) =>
+      values.firstWhere((s) => s.name == name, orElse: () => same);
+}
+
+/// Interval names by semitones, unison to octave.
+const intervalNames = [
+  'Unison',
+  'Minor second',
+  'Major second',
+  'Minor third',
+  'Major third',
+  'Perfect fourth',
+  'Tritone',
+  'Perfect fifth',
+  'Minor sixth',
+  'Major sixth',
+  'Minor seventh',
+  'Major seventh',
+  'Octave',
+];
+
 class Interval {
   const Interval(this.semitones, this.label);
   final int semitones;
   final String label;
 }
 
-const intervals = [
-  Interval(3, 'Minor third (3 semitones)'),
-  Interval(4, 'Major third (4 semitones)'),
-  Interval(5, 'Perfect fourth (5 semitones)'),
-  Interval(7, 'Perfect fifth (7 semitones)'),
-];
+/// Every interval from a minor second to an octave.
+final intervals = List<Interval>.unmodifiable([
+  for (var s = 1; s <= 12; s++)
+    Interval(s, '${intervalNames[s]} ($s semitone${s == 1 ? '' : 's'})'),
+]);
+
+/// Names any distance in semitones, including in-between ones from free
+/// tuning: 5 → "Perfect fourth", 5.12 → "Perfect fourth +12¢",
+/// 19 → "Octave + perfect fifth". The sign is ignored.
+String describeInterval(double semitones) {
+  final size = semitones.abs();
+  final whole = size.round();
+  final cents = ((size - whole) * 100).round();
+  final octaves = whole ~/ 12, rest = whole % 12;
+  final octaveName = octaves == 1 ? 'Octave' : '$octaves octaves';
+  final name = octaves == 0
+      ? intervalNames[rest]
+      : rest == 0
+      ? octaveName
+      : '$octaveName + ${intervalNames[rest].toLowerCase()}';
+  if (cents.abs() <= 2) return name;
+  return '$name ${cents > 0 ? '+' : '−'}${cents.abs()}¢';
+}
 
 class PlannedDrum {
   const PlannedDrum(this.type, this.diameter, this.hz, this.range);
@@ -312,23 +360,55 @@ class PlannedDrum {
   final double hz;
   final PitchRange range;
   bool get fits => range.contains(hz);
+
+  /// Stable key for remembering settings per drum, e.g. "rackTom-12".
+  String get id => '${type.name}-$diameter';
 }
 
-/// Spreads toms [semitones] apart, from [topHz] on the smallest drum down.
+List<(DrumType, int)> _smallestFirst(List<(DrumType, int)> toms) =>
+    [...toms]..sort((a, b) => a.$2.compareTo(b.$2));
+
+/// Spaces toms from [topHz] on the smallest drum down: [gaps]`[i]` is the
+/// interval in semitones between the i-th and the next tom, smallest first.
+/// Missing gaps repeat the last one given (a perfect fourth if none).
 /// [toms] are (type, diameter) pairs in any order.
 List<PlannedDrum> planToms(
   List<(DrumType, int)> toms,
   double topHz,
-  int semitones,
+  List<int> gaps,
 ) {
-  final sorted = [...toms]..sort((a, b) => a.$2.compareTo(b.$2));
+  final sorted = _smallestFirst(toms);
+  final out = <PlannedDrum>[];
+  var hz = topHz;
+  for (var i = 0; i < sorted.length; i++) {
+    if (i > 0) {
+      final gap = i - 1 < gaps.length ? gaps[i - 1] : (gaps.isEmpty ? 5 : gaps.last);
+      hz = shift(hz, -gap);
+    }
+    out.add(PlannedDrum(sorted[i].$1, sorted[i].$2, hz, rangeFor(sorted[i].$1, sorted[i].$2)));
+  }
+  return out;
+}
+
+/// Every tom the same [semitones] apart.
+List<PlannedDrum> planSame(
+  List<(DrumType, int)> toms,
+  double topHz,
+  int semitones,
+) => planToms(toms, topHz, List.filled(math.max(0, toms.length - 1), semitones));
+
+/// Free tuning: [hz]`[i]` is the pitch of the i-th tom, smallest first.
+List<PlannedDrum> planFree(List<(DrumType, int)> toms, List<double> hz) {
+  final sorted = _smallestFirst(toms);
   return [
-    for (var i = 0; i < sorted.length; i++)
-      PlannedDrum(
-        sorted[i].$1,
-        sorted[i].$2,
-        shift(topHz, -semitones * i),
-        rangeFor(sorted[i].$1, sorted[i].$2),
-      ),
+    for (var i = 0; i < sorted.length && i < hz.length; i++)
+      PlannedDrum(sorted[i].$1, sorted[i].$2, hz[i], rangeFor(sorted[i].$1, sorted[i].$2)),
   ];
 }
+
+/// The distance in semitones from each tom down to the next: positive when
+/// the larger tom is lower, as expected; negative when it is higher.
+List<double> gapsBetween(List<PlannedDrum> plan) => [
+  for (var i = 0; i + 1 < plan.length; i++)
+    12 * log2(plan[i].hz / plan[i + 1].hz),
+];

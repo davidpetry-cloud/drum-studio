@@ -267,10 +267,44 @@ void tuning() {
       h.sources.every(sources.containsKey)), true);
   check('11 materials', materials.length, 11);
 
-  final plan = planToms([(DrumType.floorTom, 16), (DrumType.rackTom, 10), (DrumType.rackTom, 12)], 180, 5);
+  final plan = planSame([(DrumType.floorTom, 16), (DrumType.rackTom, 10), (DrumType.rackTom, 12)], 180, 5);
   check('plan order', plan.map((p) => p.diameter).toList(), [10, 12, 16]);
   near('plan step', plan[1].hz, shift(180, -5), 1e-9);
   check('plan fits', plan.map((p) => p.fits).toList(), [true, true, false]);
+  // Interval names, including in-between and compound ones.
+  check('12 intervals', intervals.length, 12);
+  check('interval label', intervals[4].label, 'Perfect fourth (5 semitones)');
+  check('interval 1 label', intervals.first.label, 'Minor second (1 semitone)');
+  check('name 5', describeInterval(5), 'Perfect fourth');
+  check('name 5.12', describeInterval(5.12), 'Perfect fourth +12¢');
+  check('name 6.9', describeInterval(6.9), 'Perfect fifth −10¢');
+  check('name unison', describeInterval(0.01), 'Unison');
+  check('name compound', describeInterval(19), 'Octave + perfect fifth');
+  check('name two octaves', describeInterval(24), '2 octaves');
+  check('name ignores sign', describeInterval(-3), 'Minor third');
+  check('spacing byName', Spacing.byName('free'), Spacing.free);
+  check('spacing fallback', Spacing.byName('x'), Spacing.same);
+
+  // Custom gaps: a fourth then a fifth adds up to an octave.
+  final toms3 = [(DrumType.floorTom, 16), (DrumType.rackTom, 10), (DrumType.rackTom, 12)];
+  final custom = planToms(toms3, 180, [5, 7]);
+  near('custom gap 1', custom[1].hz, shift(180, -5), 1e-9);
+  near('custom gap 2 = octave', custom[2].hz, 90, 1e-9);
+  check('custom ids', custom.map((p) => p.id).toList(), ['rackTom-10', 'rackTom-12', 'floorTom-16']);
+  near('missing gaps repeat the last', planToms(toms3, 180, [3])[2].hz, shift(180, -6), 1e-9);
+  near('no gaps means a fourth', planToms(toms3, 180, [])[1].hz, shift(180, -5), 1e-9);
+  check('same matches custom', planSame(toms3, 180, 4).map((p) => p.hz).toList(),
+      planToms(toms3, 180, [4, 4]).map((p) => p.hz).toList());
+  check('one tom, no gaps', planSame([(DrumType.rackTom, 10)], 150, 5).length, 1);
+
+  // Free tuning: report what the gaps turn out to be.
+  final free = planFree(toms3, [160, 120, 125]);
+  final gaps = gapsBetween(free);
+  check('free order', free.map((p) => p.diameter).toList(), [10, 12, 16]);
+  check('free gap names', gaps.map(describeInterval).toList(), ['Perfect fourth', 'Minor second −29¢']);
+  check('inverted gap is negative', gaps[1] < 0, true);
+  check('free fits', free.map((p) => p.fits).toList(), [true, true, false]);
+
   check('depth note shallow', depthNote(DrumType.snare, 3.5).startsWith('Shallower'), true);
   check('depth note typical', depthNote(DrumType.snare, 5).startsWith('A common'), true);
 }
