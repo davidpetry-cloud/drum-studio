@@ -17,6 +17,7 @@ import 'dom.dart';
 
 void main() {
   wireThemeToggle();
+  wireInstall();
   registerServiceWorker();
   final panel = document.getElementById('metro');
   if (panel == null) return;
@@ -131,8 +132,9 @@ class Metronome {
       if (n != null && n >= minBpm && n <= maxBpm) _setBpm(n, keepTyping: true);
     });
     on(bpmInput, 'change', () => _setBpm(_int(bpmInput.value) ?? groove.bpm));
-    onId('bpm-down', 'click', () => _nudge(-1));
-    onId('bpm-up', 'click', () => _nudge(1));
+    // Press and hold to keep going (audit #11).
+    _holdToRepeat(el('bpm-down'), -1);
+    _holdToRepeat(el('bpm-up'), 1);
     // Step along the classic metronome marks (by 2, 3, 4, 6 or 8).
     onId('bpm-prev', 'click', () => _setBpm(previousMark(groove.bpm)));
     onId('bpm-next', 'click', () => _setBpm(nextMark(groove.bpm)));
@@ -140,8 +142,8 @@ class Metronome {
     onId('tap', 'click', _tap);
     on(quickStart, 'click', toggle);
     onId('q-tap', 'click', _tap);
-    onId('q-down', 'click', () => _nudge(-1));
-    onId('q-up', 'click', () => _nudge(1));
+    _holdToRepeat(el('q-down'), -1);
+    _holdToRepeat(el('q-up'), 1);
     // Show the quick controls only while the main Start button is out of view.
     document.addEventListener('scroll', ((JSAny? _) => updateTransport()).toJS);
     onWindow('resize', updateTransport);
@@ -264,6 +266,52 @@ class Metronome {
   int? _int(String text) => num.tryParse(text.trim())?.round();
 
   void _nudge(int by) => _setBpm(groove.bpm + by);
+
+  /// One step on press; after a moment, repeats, and after about a second
+  /// moves two at a time. Keyboard and assistive-technology clicks (which
+  /// have no pointer) still step once each, as before.
+  void _holdToRepeat(Element button, int by) {
+    int? delay, repeat;
+    var steps = 0;
+    void stop() {
+      if (delay case final id?) clearTimeout(id);
+      if (repeat case final id?) clearInterval(id);
+      delay = repeat = null;
+    }
+
+    button.addEventListener(
+      'pointerdown',
+      ((Event e) {
+        if (e.button != 0) return;
+        stop();
+        _nudge(by);
+        steps = 0;
+        delay = setTimeout(
+          (() {
+            repeat = setInterval(
+              (() => _nudge(by * (++steps > 10 ? 2 : 1))).toJS,
+              90,
+            );
+          }).toJS,
+          450,
+        );
+      }).toJS,
+    );
+    for (final type in ['pointerup', 'pointercancel', 'pointerleave']) {
+      button.addEventListener(type, ((JSAny? _) => stop()).toJS);
+    }
+    // No long-press menu on phones.
+    button.addEventListener(
+      'contextmenu',
+      ((Event e) => e.preventDefault()).toJS,
+    );
+    button.addEventListener(
+      'click',
+      ((Event e) {
+        if (e.detail == 0) _nudge(by);
+      }).toJS,
+    );
+  }
 
   void _setBpm(num value, {bool keepTyping = false}) {
     groove.bpm = clampBpm(value);

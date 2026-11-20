@@ -17,6 +17,7 @@ import 'dom.dart';
 
 void main() {
   wireThemeToggle();
+  wireInstall();
   registerServiceWorker();
   if (document.getElementById('guide') == null) return;
   final guide = Guide()..wire();
@@ -370,7 +371,9 @@ class Tuner {
   int? _frame;
   bool _running = false;
   final _hits = HitTracker();
-  final _lugs = <double>[];
+  late final LugSet _lugs = LugSet(guide.type.typicalLugs);
+  DrumType _lugType = DrumType.snare; // set in wire()
+  final Field lugCount = el('lug-count');
   double? _last;
 
   late final JSFunction _drawJs = _draw.toJS;
@@ -408,9 +411,31 @@ class Tuner {
     onWindow('pagehide', () => pause());
     on(sensitivity, 'input', _readSensitivity);
     onId('lugs-clear', 'click', () {
-      _lugs.clear();
+      _lugs.clearAll();
       _showLugs();
       _say('Lug readings cleared.');
+    });
+    for (var n = LugSet.minLugs; n <= LugSet.maxLugs; n++) {
+      lugCount.appendChild(
+        make('option', text: '$n')..setAttribute('value', '$n'),
+      );
+    }
+    lugCount.value = '${_lugs.count}';
+    on(lugCount, 'change', () {
+      _lugs.resize(int.tryParse(lugCount.value) ?? _lugs.count);
+      _showLugs();
+      _say('${_lugs.count} lugs.');
+    });
+    // A different drum: start fresh with that drum's usual lug count.
+    _lugType = guide.type;
+    guide.listeners.add(() {
+      if (guide.type == _lugType) return;
+      _lugType = guide.type;
+      _lugs
+        ..resize(_lugType.typicalLugs)
+        ..clearAll();
+      lugCount.value = '${_lugs.count}';
+      _showLugs();
     });
     guide.listeners.add(_showTarget);
     _readSensitivity();
@@ -581,47 +606,95 @@ class Tuner {
     needle
       ..hidden = false
       ..style.setProperty('--cents', '${note.cents}');
-    _lugs.add(hz);
-    if (_lugs.length > 12) _lugs.removeAt(0);
+    final lug = _lugs.next;
+    _lugs.record(hz);
     _showLugs();
     _showTarget();
     _say(
-      '${_reading(hz)} hertz, ${note.describe.replaceAll('♯', ' sharp').replaceAll('¢', ' cents').replaceAll('−', 'minus ')}.',
+      'Lug ${lug + 1}: ${_reading(hz)} hertz, ${note.describe.replaceAll('♯', ' sharp').replaceAll('¢', ' cents').replaceAll('−', 'minus ')}.',
     );
   }
 
+  /// One slot per lug: its reading and distance from the middle, the lug
+  /// the next tap goes to, and the one to adjust. Tap a lug to re-read it.
   void _showLugs() {
+    // Once every lug is read and one is off, select it for re-reading.
+    final worst = _lugs.worst;
+    if (worst != null && _lugs.filled == _lugs.count) _lugs.select(worst);
+    final offsets = _lugs.offsetsCents;
     lugList.replaceChildren();
-    final check = LugCheck(_lugs);
-    final offsets = check.offsetsCents;
-    for (var i = 0; i < _lugs.length; i++) {
-      final off = offsets[i].round();
-      final sign = off > 0 ? '+' : (off < 0 ? '−' : '±');
-      final item = make('li', cls: 'lug')
-        ..appendChild(make('span', cls: 'lug-n', text: 'Lug ${i + 1}'))
+    for (var i = 0; i < _lugs.count; i++) {
+      final hz = _lugs.readings[i];
+      final off = offsets[i]?.round();
+      final sign = off == null ? '' : (off > 0 ? '+' : (off < 0 ? '−' : '±'));
+      final isNext = i == _lugs.next;
+      final words = hz == null
+          ? 'not read yet'
+          : '${_reading(hz)} hertz${_lugs.filled > 1 && off != null ? ', ${off.abs()} cents ${off > 0 ? 'sharp' : (off < 0 ? 'flat' : 'even')}' : ''}';
+      final slot = make('button', cls: 'lug')
+        ..setAttribute('type', 'button')
+        ..setAttribute('aria-pressed', '$isNext')
+        ..setAttribute(
+          'aria-label',
+          'Lug ${i + 1}: $words.${isNext ? ' Next reading goes here.' : ' Press to read it next.'}',
+        )
         ..appendChild(
-          make('span', cls: 'lug-hz', text: '${_reading(_lugs[i])} Hz'),
+          make(
+            'span',
+            cls: 'lug-n',
+            text: 'Lug ${i + 1}${isNext ? ' · next' : ''}',
+          ),
+        )
+        ..appendChild(
+          make(
+            'span',
+            cls: 'lug-hz',
+            text: hz == null ? '–' : '${_reading(hz)} Hz',
+          ),
         )
         ..appendChild(
           make(
             'span',
             cls: 'lug-off',
-            text: _lugs.length > 1 ? '$sign${off.abs()}¢' : '',
+            text: _lugs.filled > 1 && off != null ? '$sign${off.abs()}¢' : '',
           ),
         );
-      if (check.worst == i) item.classList.add('is-worst');
-      lugList.appendChild(item);
+      if (isNext) slot.classList.add('is-next');
+      if (worst == i) slot.classList.add('is-worst');
+      final index = i;
+      on(slot, 'click', () {
+        _lugs.select(index);
+        _showLugs();
+        _say('The next reading goes to lug ${index + 1}.');
+      });
+      final row = make('li', cls: 'lug-row')..appendChild(slot);
+      if (hz != null) {
+        final clear = make('button', cls: 'lug-clear', text: '×')
+          ..setAttribute('type', 'button')
+          ..setAttribute('aria-label', 'Clear lug ${index + 1}');
+        on(clear, 'click', () {
+          _lugs.clear(index);
+          _showLugs();
+          _say('Lug ${index + 1} cleared. It’s next to read.');
+        });
+        row.appendChild(clear);
+      }
+      lugList.appendChild(row);
     }
-    lugStatus.textContent = switch (_lugs.length) {
+    lugStatus.textContent = switch (_lugs.filled) {
       0 =>
-        'Tap near each tension rod in turn. Readings appear here so you can compare them.',
-      1 => 'One reading. Tap the next lug.',
-      _ when check.isEven =>
-        'Even: every lug is within ${LugCheck.evenCents}¢ of the middle reading (${_reading(check.center)} Hz).',
+        'Tap about an inch from any tension rod: that’s lug 1. Then work round the drum. Each reading fills the next lug, and you can tap a lug to re-read it.',
+      1 => 'One lug read. Next: lug ${_lugs.next + 1}.',
+      _ when _lugs.isEven =>
+        'Even: every lug read is within ${LugCheck.evenCents}¢ of the middle (${_reading(_lugs.center)} Hz).${_lugs.filled < _lugs.count ? ' Next: lug ${_lugs.next + 1}.' : ''}',
       _ => () {
-        final w = check.worst!;
-        final off = check.offsetsCents[w];
-        return 'Lug ${w + 1} is ${off.abs().round()}¢ ${off > 0 ? 'sharp: loosen it slightly' : 'flat: tighten it slightly'}, then tap it again.';
+        final w = worst!;
+        final o = offsets[w]!;
+        final fix = o > 0
+            ? 'sharp: loosen it slightly'
+            : 'flat: tighten it slightly';
+        return 'Lug ${w + 1} is ${o.abs().round()}¢ $fix.'
+            '${_lugs.next == w ? ' It’s selected, so your next tap re-reads it.' : ' Next: lug ${_lugs.next + 1}.'}';
       }(),
     };
   }

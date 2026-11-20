@@ -72,10 +72,10 @@ const sources = {
 // ---- Drums and sizes ------------------------------------------------------
 
 enum DrumType {
-  snare('Snare', [10, 12, 13, 14], 14, [3.5, 4, 5, 5.5, 6, 6.5, 7, 8], 5.5),
-  rackTom('Rack tom', [8, 10, 12, 13], 12, [6, 7, 8, 9, 10], 8),
-  floorTom('Floor tom', [14, 16, 18], 16, [12, 13, 14, 16], 14),
-  kick('Bass drum (kick)', [18, 20, 22, 24, 26], 22, [14, 16, 18, 20], 18);
+  snare('Snare', [10, 12, 13, 14], 14, [3.5, 4, 5, 5.5, 6, 6.5, 7, 8], 5.5, 10),
+  rackTom('Rack tom', [8, 10, 12, 13], 12, [6, 7, 8, 9, 10], 8, 6),
+  floorTom('Floor tom', [14, 16, 18], 16, [12, 13, 14, 16], 14, 8),
+  kick('Bass drum (kick)', [18, 20, 22, 24, 26], 22, [14, 16, 18, 20], 18, 10);
 
   const DrumType(
     this.label,
@@ -83,12 +83,17 @@ enum DrumType {
     this.typicalDiameter,
     this.depths,
     this.typicalDepth,
+    this.typicalLugs,
   );
   final String label;
   final List<int> diameters;
   final int typicalDiameter;
   final List<num> depths;
   final num typicalDepth;
+
+  /// A common number of tension rods per head, used as the tuner's default
+  /// (drums vary: 8-lug snares and 8-lug kicks are common too).
+  final int typicalLugs;
 
   static DrumType byName(String name) =>
       values.firstWhere((t) => t.name == name, orElse: () => snare);
@@ -174,39 +179,83 @@ class Material {
 }
 
 const materials = [
-  Material('maple', 'Maple', Family.wood,
-      'Warm and balanced: an even spread of lows and highs with slightly boosted mids. The all-rounder.',
-      ['lm', 'g4m']),
-  Material('birch', 'Birch', Family.wood,
-      'Brighter and more focused than maple, with a crisp, dry “pop” on the attack. A studio favorite.',
-      ['lm', 'g4m']),
-  Material('mahogany', 'Mahogany', Family.wood,
-      'Warm and dark: robust lows, mellow highs, and less projection than birch. A vintage feel.',
-      ['lm', 'g4m']),
-  Material('oak', 'Oak', Family.wood,
-      'Dry and punchy with strong projection and a solid low-mid.',
-      ['lm', 'g4m']),
-  Material('walnut', 'Walnut', Family.wood,
-      'Warm and rounded, with an even spread of lows, mids and highs and a darker, vintage character.',
-      ['g4m', 'md']),
-  Material('acrylic', 'Acrylic', Family.synthetic,
-      'Strong, focused attack and plenty of projection. Sources disagree on whether it reads bright or warm; acrylic kicks often want some damping.',
-      ['md', 'lm']),
-  Material('steel', 'Steel', Family.metal,
-      'Bright and cutting with long sustain and a penetrating rimshot. Heavier and more aggressive than aluminum.',
-      ['thomannShell', 'yamahaSnare']),
-  Material('aluminum', 'Aluminum', Family.metal,
-      'Dry, bright and crisp with a short sustain, so it often needs little or no damping.',
-      ['thomannShell', 'yamahaSnare']),
-  Material('brass', 'Brass', Family.metal,
-      'Dry and articulate with darker overtones, a sharp crack and more low end than most metals.',
-      ['yamahaSnare', 'thomannShell']),
-  Material('bronze', 'Bronze', Family.metal,
-      'Dark and warm, more subdued than brass or steel. Increasingly popular on high-end snares.',
-      ['thomannShell']),
-  Material('copper', 'Copper', Family.metal,
-      'Warmer, with more low end than brass or steel. A long-time orchestral choice.',
-      ['thomannShell']),
+  Material(
+    'maple',
+    'Maple',
+    Family.wood,
+    'Warm and balanced: an even spread of lows and highs with slightly boosted mids. The all-rounder.',
+    ['lm', 'g4m'],
+  ),
+  Material(
+    'birch',
+    'Birch',
+    Family.wood,
+    'Brighter and more focused than maple, with a crisp, dry “pop” on the attack. A studio favorite.',
+    ['lm', 'g4m'],
+  ),
+  Material(
+    'mahogany',
+    'Mahogany',
+    Family.wood,
+    'Warm and dark: robust lows, mellow highs, and less projection than birch. A vintage feel.',
+    ['lm', 'g4m'],
+  ),
+  Material(
+    'oak',
+    'Oak',
+    Family.wood,
+    'Dry and punchy with strong projection and a solid low-mid.',
+    ['lm', 'g4m'],
+  ),
+  Material(
+    'walnut',
+    'Walnut',
+    Family.wood,
+    'Warm and rounded, with an even spread of lows, mids and highs and a darker, vintage character.',
+    ['g4m', 'md'],
+  ),
+  Material(
+    'acrylic',
+    'Acrylic',
+    Family.synthetic,
+    'Strong, focused attack and plenty of projection. Sources disagree on whether it reads bright or warm; acrylic kicks often want some damping.',
+    ['md', 'lm'],
+  ),
+  Material(
+    'steel',
+    'Steel',
+    Family.metal,
+    'Bright and cutting with long sustain and a penetrating rimshot. Heavier and more aggressive than aluminum.',
+    ['thomannShell', 'yamahaSnare'],
+  ),
+  Material(
+    'aluminum',
+    'Aluminum',
+    Family.metal,
+    'Dry, bright and crisp with a short sustain, so it often needs little or no damping.',
+    ['thomannShell', 'yamahaSnare'],
+  ),
+  Material(
+    'brass',
+    'Brass',
+    Family.metal,
+    'Dry and articulate with darker overtones, a sharp crack and more low end than most metals.',
+    ['yamahaSnare', 'thomannShell'],
+  ),
+  Material(
+    'bronze',
+    'Bronze',
+    Family.metal,
+    'Dark and warm, more subdued than brass or steel. Increasingly popular on high-end snares.',
+    ['thomannShell'],
+  ),
+  Material(
+    'copper',
+    'Copper',
+    Family.metal,
+    'Warmer, with more low end than brass or steel. A long-time orchestral choice.',
+    ['thomannShell'],
+  ),
 ];
 
 Material materialById(String id) =>
@@ -223,39 +272,69 @@ class Head {
 }
 
 const batterHeads = [
-  Head('1c', 'Single-ply, coated',
-      'Open and warm with lots of overtones and touch sensitivity. The classic for jazz and for brushes.',
-      ['dcp', 'gc']),
-  Head('1x', 'Single-ply, clear',
-      'The most open and bright: maximum sustain and overtones, very responsive to dynamics.',
-      ['dcp', 'gc']),
-  Head('2c', 'Two-ply, coated',
-      'Deeper and more controlled with shorter sustain, plus the durability of two plies.',
-      ['dcp', 'gc']),
-  Head('2x', 'Two-ply, clear',
-      'Punchy and fat with a bright attack and a controlled ring. Built for heavy hitting.',
-      ['dcp', 'gc']),
-  Head('ring', 'With a muffling ring or built-in control',
-      'Fewer overtones and a shorter ring, so the drum needs less extra damping.',
-      ['gc']),
+  Head(
+    '1c',
+    'Single-ply, coated',
+    'Open and warm with lots of overtones and touch sensitivity. The classic for jazz and for brushes.',
+    ['dcp', 'gc'],
+  ),
+  Head(
+    '1x',
+    'Single-ply, clear',
+    'The most open and bright: maximum sustain and overtones, very responsive to dynamics.',
+    ['dcp', 'gc'],
+  ),
+  Head(
+    '2c',
+    'Two-ply, coated',
+    'Deeper and more controlled with shorter sustain, plus the durability of two plies.',
+    ['dcp', 'gc'],
+  ),
+  Head(
+    '2x',
+    'Two-ply, clear',
+    'Punchy and fat with a bright attack and a controlled ring. Built for heavy hitting.',
+    ['dcp', 'gc'],
+  ),
+  Head(
+    'ring',
+    'With a muffling ring or built-in control',
+    'Fewer overtones and a shorter ring, so the drum needs less extra damping.',
+    ['gc'],
+  ),
 ];
 
 const resoHeads = [
-  Head('1x', 'Single-ply, clear',
-      'The usual choice: thin enough to let the shell resonate and carry the note.',
-      ['gc', 'dcp']),
-  Head('1c', 'Single-ply, coated',
-      'Like clear single-ply with slightly softened overtones.',
-      ['dcp']),
-  Head('2', 'Two-ply',
-      'Rarely recommended underneath: the extra mass tends to choke the shell’s tone.',
-      ['gc']),
-  Head('port', 'Kick front head with a port hole',
-      'Releases air so the kick sounds punchier with less boom, and gives a microphone a way in.',
-      ['daddario']),
-  Head('snare', 'Snare-side (very thin)',
-      'Made thin so the snare wires respond to the lightest notes.',
-      ['yamahaSnare']),
+  Head(
+    '1x',
+    'Single-ply, clear',
+    'The usual choice: thin enough to let the shell resonate and carry the note.',
+    ['gc', 'dcp'],
+  ),
+  Head(
+    '1c',
+    'Single-ply, coated',
+    'Like clear single-ply with slightly softened overtones.',
+    ['dcp'],
+  ),
+  Head(
+    '2',
+    'Two-ply',
+    'Rarely recommended underneath: the extra mass tends to choke the shell’s tone.',
+    ['gc'],
+  ),
+  Head(
+    'port',
+    'Kick front head with a port hole',
+    'Releases air so the kick sounds punchier with less boom, and gives a microphone a way in.',
+    ['daddario'],
+  ),
+  Head(
+    'snare',
+    'Snare-side (very thin)',
+    'Made thin so the snare wires respond to the lightest notes.',
+    ['yamahaSnare'],
+  ),
 ];
 
 Head headById(List<Head> list, String id) =>
@@ -272,15 +351,24 @@ class Relation {
 }
 
 const relations = [
-  Relation('same', 'Same pitch',
-      'The most sustain and the steadiest pitch. Yamaha suggests it as the starting point for toms and kick.',
-      ['yamaha2']),
-  Relation('higher', 'Resonant head higher',
-      'Less sustain and a pitch that bends as the note dies away. Sources disagree on which way it bends, so listen on your own drum.',
-      ['yamaha2', 'thomannTuning']),
-  Relation('lower', 'Resonant head lower',
-      'Less sustain with a slight pitch bend, often heard as a “dropping” tom. As above, sources disagree on the direction; trust your ears.',
-      ['yamaha2', 'thomannTuning']),
+  Relation(
+    'same',
+    'Same pitch',
+    'The most sustain and the steadiest pitch. Yamaha suggests it as the starting point for toms and kick.',
+    ['yamaha2'],
+  ),
+  Relation(
+    'higher',
+    'Resonant head higher',
+    'Less sustain and a pitch that bends as the note dies away. Sources disagree on which way it bends, so listen on your own drum.',
+    ['yamaha2', 'thomannTuning'],
+  ),
+  Relation(
+    'lower',
+    'Resonant head lower',
+    'Less sustain with a slight pitch bend, often heard as a “dropping” tom. As above, sources disagree on the direction; trust your ears.',
+    ['yamaha2', 'thomannTuning'],
+  ),
 ];
 
 Relation relationById(String id) =>
@@ -295,8 +383,14 @@ const snareRelationNote =
 /// How the planner spaces the toms.
 enum Spacing {
   same('Same interval', 'Every tom the same interval below the one above it.'),
-  perGap('Custom per gap', 'Choose the interval between each pair of neighbouring toms.'),
-  free('Free tuning', 'Type each tom’s pitch. Nothing is enforced; the planner shows the intervals you end up with.');
+  perGap(
+    'Custom per gap',
+    'Choose the interval between each pair of neighbouring toms.',
+  ),
+  free(
+    'Free tuning',
+    'Type each tom’s pitch. Nothing is enforced; the planner shows the intervals you end up with.',
+  );
 
   const Spacing(this.label, this.hint);
   final String label;
@@ -382,10 +476,19 @@ List<PlannedDrum> planToms(
   var hz = topHz;
   for (var i = 0; i < sorted.length; i++) {
     if (i > 0) {
-      final gap = i - 1 < gaps.length ? gaps[i - 1] : (gaps.isEmpty ? 5 : gaps.last);
+      final gap = i - 1 < gaps.length
+          ? gaps[i - 1]
+          : (gaps.isEmpty ? 5 : gaps.last);
       hz = shift(hz, -gap);
     }
-    out.add(PlannedDrum(sorted[i].$1, sorted[i].$2, hz, rangeFor(sorted[i].$1, sorted[i].$2)));
+    out.add(
+      PlannedDrum(
+        sorted[i].$1,
+        sorted[i].$2,
+        hz,
+        rangeFor(sorted[i].$1, sorted[i].$2),
+      ),
+    );
   }
   return out;
 }
@@ -395,14 +498,20 @@ List<PlannedDrum> planSame(
   List<(DrumType, int)> toms,
   double topHz,
   int semitones,
-) => planToms(toms, topHz, List.filled(math.max(0, toms.length - 1), semitones));
+) =>
+    planToms(toms, topHz, List.filled(math.max(0, toms.length - 1), semitones));
 
 /// Free tuning: [hz]`[i]` is the pitch of the i-th tom, smallest first.
 List<PlannedDrum> planFree(List<(DrumType, int)> toms, List<double> hz) {
   final sorted = _smallestFirst(toms);
   return [
     for (var i = 0; i < sorted.length && i < hz.length; i++)
-      PlannedDrum(sorted[i].$1, sorted[i].$2, hz[i], rangeFor(sorted[i].$1, sorted[i].$2)),
+      PlannedDrum(
+        sorted[i].$1,
+        sorted[i].$2,
+        hz[i],
+        rangeFor(sorted[i].$1, sorted[i].$2),
+      ),
   ];
 }
 

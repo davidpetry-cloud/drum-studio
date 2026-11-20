@@ -330,6 +330,39 @@ void pitch() {
   final lugs = LugCheck([200, 201, 199.5, 200.4]);
   check('even lugs', lugs.isEven, true);
   check('no worst', lugs.worst, null);
+  // Lug slots: fill in order, re-read one, clear one, resize.
+  final slots = LugSet(6);
+  check('lug count', (slots.count, slots.next, slots.filled), (6, 0, 0));
+  for (final hz in [200.0, 201.0, 199.5]) {
+    slots.record(hz);
+  }
+  check('fills in order', (slots.next, slots.filled), (3, 3));
+  slots.select(1);
+  slots.record(192);
+  check('re-read lug 2', slots.readings[1], 192.0);
+  check('goes on to the next empty lug', slots.next, 3);
+  check('worst is lug 2', slots.worst, 1);
+  slots.select(1);
+  slots.record(200.6);
+  check('fixed lug 2 → even', (slots.isEven, slots.worst), (true, null));
+  slots.clear(0);
+  check('clear one', (slots.readings[0], slots.next, slots.filled), (null, 0, 2));
+  final offs = slots.offsetsCents;
+  check('offsets skip empty lugs', (offs[0], offs[1] != null, offs[5]), (null, true, null));
+  for (final hz in [200.0, 200.2, 199.9, 200.1]) {
+    slots.record(hz);
+  }
+  check('all full, back to lug 1', (slots.filled, slots.next), (6, 0));
+  slots.resize(4);
+  check('resize keeps what fits', (slots.count, slots.readings.length), (4, 4));
+  slots.resize(40);
+  check('resize clamps', slots.count, 16);
+  slots.clearAll();
+  check('clear all', (slots.filled, slots.next), (0, 0));
+  final wrap = LugSet(3)..record(1)..record(2)..record(3);
+  check('full set wraps to lug 1', wrap.next, 0);
+  check('typical lugs', [for (final t in DrumType.values) t.typicalLugs], [10, 6, 8, 10]);
+
   final off = LugCheck([200, 201, 192, 200.4]);
   check('uneven lugs', off.isEven, false);
   check('worst lug', off.worst, 2);

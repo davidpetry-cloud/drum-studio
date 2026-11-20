@@ -22,7 +22,8 @@
   grid, Italian tempo word with its English meaning and BPM range, three click sounds (woodblock, beep, stick), beat light,
   vibration (Android), screen wake lock, keyboard shortcuts.
 - **Drum Tuning:** guide by drum, size, depth, shell, heads and head relationship, with cited
-  starting ranges; microphone tuner with lug-by-lug evenness check; tom planner with same, per-gap
+  starting ranges; microphone tuner with numbered lug slots (lug count per drum, tap a lug to
+  re-read it, the one to adjust selected automatically); tom planner with same, per-gap
   or free spacing.
 - **Everywhere:** installable and offline, light/dark themes, title-case headings, "by David Petry"
   byline, WCAG 2.2 AA (0 axe violations).
@@ -49,9 +50,8 @@
 
 ## Next up (backlog)
 
-1. **UX audit fixes:** see `docs/ux-ui-audit-2026-11-20.md`. Done: #1–#6, #8, #9, #12–#14.
-   Left: #7 per-lug tuner (lug count, re-read one lug), #10 install button, #11 hold-to-repeat
-   on the ± buttons.
+1. ~~**UX audit fixes**~~: all 14 items in `docs/ux-ui-audit-2026-11-20.md` are done. A fresh
+   audit after real-device testing is a good next check.
 2. **Phase 3: play-along grooves** (synthesized rock, bossa, songo, swing, clave) that follow the
    metronome's tempo, with voice muting.
 3. **Real-device testing:** iPhone silent switch, Android vibration, tuner on a real drum, installing
