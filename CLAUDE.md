@@ -25,3 +25,19 @@
   is CC BY-NC 4.0, both crediting David Petry. Keep the `Required Notice`
   line intact. Don't add third-party code or assets without recording their
   licence in `THIRD-PARTY-NOTICES.md`.
+
+## Security by default
+
+For all code: apply least privilege and defense in depth. Never commit
+secrets or personal data. Access to devices (microphone, camera, location,
+Bluetooth, USB, IoT) only after a real user action, with clear on-screen
+state, automatic shutoff, no network exfiltration, and refusal inside other
+sites' frames. Use strict security policies (CSP, no third-party scripts
+unless needed and pinned). Test like an attacker before shipping, document
+protections in `SECURITY.md`, and keep dependencies patched (Dependabot).
+Obscurity is never the protection.
+
+In this repo that means: keep `connect-src 'none'` and `script-src 'self'`
+in both pages' CSP; keep the tuner's protections (real tap only, no frames,
+auto-off, one audio channel) and update `SECURITY.md` if they change; review
+and merge Dependabot pull requests promptly.

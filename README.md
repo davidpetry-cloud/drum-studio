@@ -59,6 +59,7 @@ committed, so GitHub Pages just publishes the folder.
 | `dart/test/checks.dart` | Checks for everything in `dart/lib/` |
 | `sw.js`, `manifest.webmanifest`, `icons/` | Offline support and installing |
 | `.github/workflows/pages.yml` | Checks, then publishes the site to GitHub Pages |
+| `.github/dependabot.yml` | Weekly pull requests for security fixes and updates to the tools used |
 | `SECURITY.md` | How the microphone is protected, and how to report a vulnerability |
 | `docs/BOOKMARK.md` | Where the project stands, decisions made, and what's next. Start here when resuming |
 | `docs/ux-ui-audit-2026-11-20.md` | UX & UI audit with prioritised fixes |
