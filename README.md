@@ -59,6 +59,8 @@ committed, so GitHub Pages just publishes the folder.
 | `dart/test/checks.dart` | Checks for everything in `dart/lib/` |
 | `sw.js`, `manifest.webmanifest`, `icons/` | Offline support and installing |
 | `.github/workflows/pages.yml` | Checks, then publishes the site to GitHub Pages |
+| `.github/dependabot.yml` | Weekly pull requests for security fixes and updates to the tools used |
+| `SECURITY.md` | How the microphone is protected, and how to report a vulnerability |
 | `docs/BOOKMARK.md` | Where the project stands, decisions made, and what's next. Start here when resuming |
 | `docs/ux-ui-audit-2026-11-20.md` | UX & UI audit with prioritised fixes |
 
@@ -94,10 +96,11 @@ to the copy step in the workflow** (and to `FILES` in `sw.js`).
 ### Security
 
 Each page sets a strict Content-Security-Policy in a `<meta>` tag (GitHub
-Pages can't send custom headers): no inline scripts or styles and nothing
-loaded from other sites. Scripts change the look only through CSS custom
-properties. If you edit the policy, change it in both pages. The microphone
-is only requested on the tuning page, and only when you press Start tuner.
+Pages can't send custom headers): no inline scripts or styles, nothing
+loaded from other sites, and no network requests at all (`connect-src
+'none'`). Scripts change the look only through CSS custom properties. If
+you edit the policy, change it in both pages. The microphone protections
+are described in [`SECURITY.md`](SECURITY.md).
 
 ## Tuning data
 

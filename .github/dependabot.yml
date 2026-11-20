@@ -1,0 +1,18 @@
+# Dependabot opens a pull request when something this repo uses has a
+# security fix or a new version. Merging one publishes the site as usual.
+version: 2
+updates:
+  # The GitHub Actions in .github/workflows/pages.yml (checkout, Dart,
+  # Pages). Keeps them patched and on supported Node versions.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns: ["*"]
+  # Dart packages (none today; ready if any are added).
+  - package-ecosystem: "pub"
+    directory: "/dart"
+    schedule:
+      interval: "weekly"

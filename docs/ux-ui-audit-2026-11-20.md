@@ -28,8 +28,8 @@ expectation) · 🟢 low (polish). **Effort:** S (under an hour) · M (a few hou
 
 | # | Sev | Area | Finding (evidence) | Recommendation | Effort |
 |---|---|---|---|---|---|
-| 1 | 🔴 | Metronome, phone | **Start is below the first screen on every phone tested**: 16px (Pixel 7), 220px (iPhone 13), 376px (iPhone SE) below. The most-used button needs a scroll every session. *Heuristics: flexibility & efficiency; Fitts's law.* | Add a **sticky transport bar** at the bottom on phones: Start/Stop, BPM −/+, Tap. Bottom placement is also in easy thumb reach. | M |
-| 2 | 🔴 | Tuning, phone | **The tuner is ~1,600–1,800px down** (2+ screens) and the page is 7–9 screens long. At the kit, the job is "tap and read", but the form comes first. *Heuristics: match the real world; efficiency.* | Add **section tabs** at the top (Tuner · Your Drum · Planner · How-to) and put the tuner first, or keep a "Start tuner" shortcut in the header. | M |
+| 1 | ✅ 🔴 | Metronome, phone | **Start is below the first screen on every phone tested**: 16px (Pixel 7), 220px (iPhone 13), 376px (iPhone SE) below. The most-used button needs a scroll every session. *Heuristics: flexibility & efficiency; Fitts's law.* | Add a **sticky transport bar** at the bottom on phones: Start/Stop, BPM −/+, Tap. Bottom placement is also in easy thumb reach. | M |
+| 2 | ✅ 🔴 | Tuning, phone | **The tuner is ~1,600–1,800px down** (2+ screens) and the page is 7–9 screens long. At the kit, the job is "tap and read", but the form comes first. *Heuristics: match the real world; efficiency.* | Add **section tabs** at the top (Tuner · Your Drum · Planner · How-to) and put the tuner first, or keep a "Start tuner" shortcut in the header. | M |
 | 3 | ✅ 🔴 | Saved tempos | **Delete is instant with no undo** (tested: one tap removed the preset for good). *Heuristics: error prevention; help users recover.* | After deleting, show **"Deleted 'X' · Undo"** for about 8 seconds. | S |
 | 4 | 🟠 | Both pages, phone | The page header (eyebrow, title, byline, intro) fills **~55% of the first phone screen**. That's fine for a first visit, wasteful for a tool you open daily. *Heuristic: aesthetic & minimalist design.* | On phones, use a smaller title and show the intro only on the first visit (or as a one-line summary). | S |
 | 5 | 🟠 | Metronome | **No count-in.** Drummers expect a bar of clicks (or a spoken count) before the groove. *Heuristic: match the real world.* | Optional **count-in: off / 1 bar / 2 bars**, shown as "Count-in 1 2 3 4" in the beat light. | S–M |
@@ -60,7 +60,8 @@ expectation) · 🟢 low (polish). **Effort:** S (under an hour) · M (a few hou
 
 1. **Quick wins (S):** ~~#3 undo delete, #6 trainer progress, #8 mic messages~~ (done 2026-11-20; the speed-trainer
    work also fixed a crash when the tempo started on the wrong side of the target), #4 compact phone header, #13, #12
-2. **Biggest impact (M):** #1 sticky transport bar, #2 tuning page tabs
+2. **Biggest impact (M):** ~~#1 sticky transport bar, #2 tuning page tabs~~ (done 2026-11-20: Start is on
+   the first screen of every phone tested; the tuning page went from ~5,800px to ~1,700px on an iPhone 13)
 3. **Drummer features:** #5 count-in, #9 subdivision ticks, #7 per-lug tuner
 4. **Polish:** #10 install button, #11 hold-to-repeat, #14 tempo ranges
 
