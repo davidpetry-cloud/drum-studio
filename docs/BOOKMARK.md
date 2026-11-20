@@ -16,7 +16,7 @@
 
 ## Built so far
 
-- **Metronome:** 20–300 BPM, tap tempo, any time signature with odd-meter groupings, dotted-quarter
+- **Metronome:** 20–300 BPM, classic metronome-mark steps, tap tempo, any time signature with odd-meter groupings, dotted-quarter
   counting, subdivisions to 32nds with swing, per-beat accent/normal/ghost/mute, saved tempos plus
   starting points, speed and gap trainers, count-in (off/1/2 bars), subdivision ticks in the beat
   grid, tempo word with its BPM range, three click sounds (woodblock, beep, stick), beat light,

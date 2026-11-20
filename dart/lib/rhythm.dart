@@ -10,6 +10,27 @@ const maxBpm = 300;
 
 int clampBpm(num bpm) => bpm.round().clamp(minBpm, maxBpm);
 
+/// The classic metronome marks, as printed on mechanical (Maelzel)
+/// metronomes: by 2 from 40 to 60, by 3 to 72, by 4 to 120, by 6 to 144 and
+/// by 8 to 208. Extended the same way at both ends to cover 20–300 BPM: by 2
+/// below 40 and by 8 above 208, ending at 300.
+final List<int> classicMarks = List.unmodifiable(<int>{
+  for (var b = minBpm; b < 60; b += 2) b,
+  for (var b = 60; b < 72; b += 3) b,
+  for (var b = 72; b < 120; b += 4) b,
+  for (var b = 120; b < 144; b += 6) b,
+  for (var b = 144; b <= maxBpm; b += 8) b,
+  maxBpm,
+});
+
+/// The next classic mark above [bpm] (or the top of the range).
+int nextMark(int bpm) =>
+    classicMarks.firstWhere((m) => m > bpm, orElse: () => maxBpm);
+
+/// The previous classic mark below [bpm] (or the bottom of the range).
+int previousMark(int bpm) =>
+    classicMarks.lastWhere((m) => m < bpm, orElse: () => minBpm);
+
 /// What each beat cell plays. Tapping a cell steps through these in order.
 enum Level {
   accent('Accent'),

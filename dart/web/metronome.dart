@@ -70,6 +70,8 @@ class Metronome {
   final Field bigFlashBox = el('big-flash');
   final Field countInSelect = el('count-in');
   final Element tempoRangeEl = el('tempo-range');
+  final Field markPrev = el('bpm-prev');
+  final Field markNext = el('bpm-next');
   final Element status = el('status');
   final Element myList = el('my-presets');
   final Element myEmpty = el('presets-empty');
@@ -130,8 +132,9 @@ class Metronome {
     on(bpmInput, 'change', () => _setBpm(_int(bpmInput.value) ?? groove.bpm));
     onId('bpm-down', 'click', () => _nudge(-1));
     onId('bpm-up', 'click', () => _nudge(1));
-    onId('bpm-down-5', 'click', () => _nudge(-5));
-    onId('bpm-up-5', 'click', () => _nudge(5));
+    // Step along the classic metronome marks (by 2, 3, 4, 6 or 8).
+    onId('bpm-prev', 'click', () => _setBpm(previousMark(groove.bpm)));
+    onId('bpm-next', 'click', () => _setBpm(nextMark(groove.bpm)));
     on(startButton, 'click', toggle);
     onId('tap', 'click', _tap);
     on(quickStart, 'click', toggle);
@@ -277,6 +280,16 @@ class Metronome {
     tempoWord.textContent = tempoMarking(bpm);
     final (lo, hi) = tempoRange(bpm);
     tempoRangeEl.textContent = '$lo–$hi BPM';
+    // The mark buttons show where they'll go.
+    final prev = previousMark(bpm), next = nextMark(bpm);
+    markPrev
+      ..textContent = '‹ $prev'
+      ..setAttribute('aria-label', 'Previous classic metronome mark: $prev BPM')
+      ..disabled = prev == bpm;
+    markNext
+      ..textContent = '$next ›'
+      ..setAttribute('aria-label', 'Next classic metronome mark: $next BPM')
+      ..disabled = next == bpm;
     quickBpm.textContent = '$bpm';
     final unit = groove.dottedBeat && groove.meter.isCompound
         ? 'dotted quarter'
@@ -629,11 +642,11 @@ class Metronome {
             toggle();
           case 'ArrowUp' when !typing:
             e.preventDefault();
-            _nudge(e.shiftKey ? 10 : 1);
+            e.shiftKey ? _setBpm(nextMark(groove.bpm)) : _nudge(1);
             _sayLater('${groove.bpm} BPM');
           case 'ArrowDown' when !typing:
             e.preventDefault();
-            _nudge(e.shiftKey ? -10 : -1);
+            e.shiftKey ? _setBpm(previousMark(groove.bpm)) : _nudge(-1);
             _sayLater('${groove.bpm} BPM');
           case 't' || 'T' when !typing && !e.repeat:
             _tap();

@@ -553,7 +553,21 @@ input[type="range"] { width: 100%; min-height: 44px; margin: 0; }
 .tempo-word { color: var(--amber); font-family: var(--serif); font-style: italic; font-size: var(--fs-2xl); font-weight: 600; line-height: 1.1; }
 .tempo-unit { color: var(--muted2); font-size: var(--fs-sm); max-width: 22ch; }
 .tempo-range { color: var(--muted2); font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
-.slide { display: grid; grid-template-columns: auto auto 1fr auto auto; gap: 8px; align-items: center; }
+.slide {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto auto;
+  grid-template-areas: "prev down range up next";
+  gap: 8px;
+  align-items: center;
+}
+#bpm-prev { grid-area: prev; }
+#bpm-down { grid-area: down; }
+#bpm-range { grid-area: range; }
+#bpm-up { grid-area: up; }
+#bpm-next { grid-area: next; }
+/* Classic-mark buttons show their target, e.g. "‹ 92" and "100 ›" */
+.mark-step { min-width: 64px; padding: 0 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.step:disabled { opacity: 0.45; cursor: default; }
 .step {
   min-width: 44px;
   height: 44px;
@@ -937,8 +951,11 @@ body.has-transport { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px
   .brand { font-size: var(--fs-base); }
   .navlinks a { padding: 0 10px; }
   .bpm { font-size: 60px !important; min-height: 76px !important; }
-  .slide { grid-template-columns: auto 1fr auto; }
-  .slide #bpm-down-5, .slide #bpm-up-5 { display: none; }
+  /* Phones: fine ± around the slider, classic marks on their own row */
+  .slide {
+    grid-template-columns: 44px 1fr 1fr 44px;
+    grid-template-areas: "down range range up" "prev prev next next";
+  }
   .cell { width: 56px; }
   .cell.group-start { margin-left: 8px; }
   .range-stops dd { font-size: var(--fs-lg); }

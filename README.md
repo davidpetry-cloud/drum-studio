@@ -19,7 +19,8 @@ credit David Petry; commercial use needs permission. Details in
 ## What's in it
 
 **Metronome** (`index.html`)
-- 20–300 BPM: type it, slide it, nudge it ±1/±5, tap it, or use the arrow keys
+- 20–300 BPM: type it, slide it, nudge it ±1, jump between the classic metronome
+  marks (by 2, 3, 4, 6 or 8 as the tempo rises), tap it, or use the arrow keys
 - Any time signature from 1 to 32 beats over 2, 4, 8 or 16, with quick picks
   and groupings for odd meters (7/8 as 2+2+3, 3+2+2 …)
 - Compound meters (6/8, 9/8, 12/8) can count the tempo in dotted quarters

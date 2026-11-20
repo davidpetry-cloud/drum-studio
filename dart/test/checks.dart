@@ -104,6 +104,26 @@ void rhythm() {
   check('marking edges', [tempoMarking(20), tempoMarking(75), tempoMarking(76), tempoMarking(300)],
       ['Grave', 'Adagio', 'Andante', 'Prestissimo']);
   check('range andante', tempoRange(96), (76, 107));
+  // Classic metronome marks: 2s, 3s, 4s, 6s, 8s.
+  for (final m in [40, 42, 58, 60, 63, 66, 69, 72, 76, 96, 100, 116, 120, 126, 132, 138, 144, 152, 200, 208]) {
+    check('classic mark $m', classicMarks.contains(m), true);
+  }
+  for (final m in [41, 61, 74, 98, 122, 148]) {
+    check('not a classic mark $m', classicMarks.contains(m), false);
+  }
+  check('marks run 20 to 300', (classicMarks.first, classicMarks.last), (20, 300));
+  check('marks ascend', [for (var i = 1; i < classicMarks.length; i++) classicMarks[i] > classicMarks[i - 1]].every((x) => x), true);
+  check('next from a mark', nextMark(96), 100);
+  check('next between marks', nextMark(98), 100);
+  check('previous between marks', previousMark(98), 96);
+  check('next across 60', nextMark(60), 63);
+  check('previous across 60', previousMark(60), 58);
+  check('next across 120', nextMark(120), 126);
+  check('next past 208', nextMark(208), 216);
+  check('next at top', nextMark(300), 300);
+  check('next near top', nextMark(299), 300);
+  check('previous at bottom', previousMark(20), 20);
+  check('previous near bottom', previousMark(21), 20);
   check('range grave', tempoRange(20), (20, 39));
   check('range top', tempoRange(250), (200, 300));
 
