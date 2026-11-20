@@ -34,11 +34,11 @@ expectation) · 🟢 low (polish). **Effort:** S (under an hour) · M (a few hou
 | 4 | ✅ 🟠 | Both pages, phone | The page header (eyebrow, title, byline, intro) fills **~55% of the first phone screen**. That's fine for a first visit, wasteful for a tool you open daily. *Heuristic: aesthetic & minimalist design.* | On phones, use a smaller title and show the intro only on the first visit (or as a one-line summary). | S |
 | 5 | ✅ 🟠 | Metronome | **No count-in.** Drummers expect a bar of clicks (or a spoken count) before the groove. *Heuristic: match the real world.* | Optional **count-in: off / 1 bar / 2 bars**, shown as "Count-in 1 2 3 4" in the beat light. | S–M |
 | 6 | ✅ 🟠 | Speed trainer | Progress is invisible apart from the BPM number changing. *Heuristic: visibility of system status.* | Show a line such as "Speed trainer: 104 → 140 BPM · next +4 in 2 bars". | S |
-| 7 | 🟠 | Tuner | Lug readings are numbered in tap order. One mis-tap shifts every lug after it, and the only fix is "Clear" (all). *Heuristic: user control & freedom.* | Let the user pick the lug count (6/8/10), tap a lug to re-read it, and remove a single reading. | M |
+| 7 | ✅ 🟠 | Tuner | Lug readings are numbered in tap order. One mis-tap shifts every lug after it, and the only fix is "Clear" (all). *Heuristic: user control & freedom.* | Let the user pick the lug count (6/8/10), tap a lug to re-read it, and remove a single reading. | M |
 | 8 | ✅ 🟠 | Tuner | One generic message covers every microphone problem. *Heuristic: help users recognise, diagnose and recover from errors.* | Separate messages for *permission denied* (with iPhone and Android steps), *no microphone found*, and *page not secure*. | S |
 | 9 | ✅ 🟠 | Beat grid | **Subdivisions aren't shown**, only beats light up, so 16ths and triplets are heard but not seen. This matters for hearing-impaired and visual learners. *Five senses: sight.* | Small sub-pulse ticks under each beat cell that light in time. | M |
-| 10 | 🟠 | Install | The app can be installed, but nothing says so. *Heuristic: recognition rather than recall.* | An **"Install app"** button (Android/desktop Chrome) and a short "Add to Home Screen" tip for iPhone. | S–M |
-| 11 | 🟢 | Tempo slider | 20–300 BPM on a ~200px phone slider is ~1.4 BPM per pixel, so fine control is hard. The ± buttons help. | **Press-and-hold** on ± to repeat, and accelerate after a second. | S |
+| 10 | ✅ 🟠 | Install | The app can be installed, but nothing says so. *Heuristic: recognition rather than recall.* | An **"Install app"** button (Android/desktop Chrome) and a short "Add to Home Screen" tip for iPhone. | S–M |
+| 11 | ✅ 🟢 | Tempo slider | 20–300 BPM on a ~200px phone slider is ~1.4 BPM per pixel, so fine control is hard. The ± buttons help. | **Press-and-hold** on ± to repeat, and accelerate after a second. | S |
 | 12 | ✅ 🟢 | Sources list | Inline links are ~18px tall and stacked closely on phones. They pass WCAG's inline exception but are fiddly. | Add vertical spacing between source links on phones. | S |
 | 13 | ✅ 🟢 | Remembered settings | Users aren't told that tempo, accents and tuning choices are remembered. | A one-line note in the footer or hints: "Your settings are saved on this device." | S |
 | 14 | ✅ 🟢 | Tempo words | "Andante" is a nice learning aid, but its BPM range isn't shown. | Show the range on hover/tap ("Andante · 76–107 BPM"). | S |
@@ -63,8 +63,10 @@ expectation) · 🟢 low (polish). **Effort:** S (under an hour) · M (a few hou
    #12 source spacing, #13 (the footers already said settings stay on the device), #14 tempo ranges (done)
 2. **Biggest impact (M):** ~~#1 sticky transport bar, #2 tuning page tabs~~ (done 2026-11-20: Start is on
    the first screen of every phone tested; the tuning page went from ~5,800px to ~1,700px on an iPhone 13)
-3. **Drummer features:** ~~#5 count-in, #9 subdivision ticks~~ (done), #7 per-lug tuner
-4. **Polish:** #10 install button, #11 hold-to-repeat, #14 tempo ranges
+3. **Drummer features:** ~~#5 count-in, #9 subdivision ticks, #7 per-lug tuner~~ (done)
+4. **Polish:** ~~#10 install button, #11 hold-to-repeat, #14 tempo ranges~~ (done)
+
+**All 14 findings are done (2026-11-20).**
 
 Re-run the measurements after changes: Start must be visible on the first screen of an
 iPhone SE, and axe-core must still report 0 violations in both themes.

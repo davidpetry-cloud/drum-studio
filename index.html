@@ -29,6 +29,7 @@
   <ul class="navlinks">
     <li><a href="index.html" aria-current="page">Metronome</a></li>
     <li><a href="tuning.html">Tuning</a></li>
+    <li><button type="button" class="theme-toggle install-btn" id="installApp" aria-label="Install Drum Studio as an app" title="Install Drum Studio as an app" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></li>
     <li><button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to light theme"><span aria-hidden="true">☀</span></button></li>
   </ul>
 </nav>
@@ -235,6 +236,7 @@
 <footer class="foot">
   <p>Drum Studio by <a href="https://david-petry.netlify.app/">David Petry</a> · <a href="https://david-petry.netlify.app/drum-exercises.html">Free drum exercises</a></p>
   <p>Works offline once loaded. Your settings stay on this device.</p>
+  <p class="install-tip" id="ios-install-tip" hidden>On iPhone or iPad: tap <strong>Share</strong>, then <strong>Add to Home Screen</strong> to install Drum Studio.</p>
   <p>© 2026 David Petry. Free to share and build on for noncommercial use, with credit: <a href="https://github.com/davidpetry-cloud/drum-studio/blob/main/LICENSE">licence</a>.</p>
 </footer>
 <script src="js/metronome.js" defer></script>

@@ -127,6 +127,13 @@ extension type Event._(JSObject _) implements JSObject {
   /// True only for events from a real person (a tap, click or key), not
   /// ones a script made up.
   external bool get isTrusted;
+
+  /// For clicks: 0 when it came from a keyboard or assistive technology
+  /// rather than a pointer.
+  external int get detail;
+
+  /// For pointer events: which button (0 is the main one / a touch).
+  external int get button;
 }
 
 // ---- Web Audio --------------------------------------------------------------
@@ -374,4 +381,47 @@ void wireThemeToggle() {
     paint();
   });
   paint();
+}
+
+/// Shows the nav's Install button where the browser offers installing
+/// (Chrome, Edge, Android), and a short "Add to Home Screen" tip on iPhone
+/// and iPad, which have no install prompt. Hidden once installed.
+void wireInstall() {
+  final button = document.getElementById('installApp');
+  final tip = document.getElementById('ios-install-tip');
+  final nav = navigator as JSObject;
+  final standalone =
+      matchMedia('(display-mode: standalone)').matches ||
+      nav['standalone'].dartify() == true;
+  if (standalone) return;
+  JSObject? offer;
+  if (button != null) {
+    globalContext.callMethod<JSAny?>(
+      'addEventListener'.toJS,
+      'beforeinstallprompt'.toJS,
+      ((JSObject e) {
+        // Keep the browser's offer for our own button instead of a banner.
+        e.callMethod<JSAny?>('preventDefault'.toJS);
+        offer = e;
+        button.hidden = false;
+      }).toJS,
+    );
+    on(button, 'click', () async {
+      final o = offer;
+      if (o == null) return;
+      offer = null;
+      try {
+        o.callMethod<JSAny?>('prompt'.toJS);
+        await (o['userChoice'] as JSPromise<JSAny?>).toDart;
+      } catch (_) {}
+      button.hidden = true; // an offer can be used only once
+    });
+    onWindow('appinstalled', () => button.hidden = true);
+  }
+  final ua = (nav['userAgent'] as JSString).toDart;
+  final touchPoints = (nav['maxTouchPoints'] as JSNumber?)?.toDartInt ?? 0;
+  final isAppleMobile =
+      RegExp(r'iPhone|iPad|iPod').hasMatch(ua) ||
+      (ua.contains('Macintosh') && touchPoints > 1);
+  if (tip != null && isAppleMobile) tip.hidden = false;
 }

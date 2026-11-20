@@ -5,7 +5,20 @@ library;
 
 import 'dart:math' as math;
 
-const noteNames = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+const noteNames = [
+  'C',
+  'C♯',
+  'D',
+  'D♯',
+  'E',
+  'F',
+  'F♯',
+  'G',
+  'G♯',
+  'A',
+  'A♯',
+  'B',
+];
 
 /// A frequency described as the nearest note plus how far off it is.
 class Note {
@@ -98,7 +111,9 @@ double? peakHz(
 double median(List<double> values) {
   final sorted = [...values]..sort();
   final mid = sorted.length ~/ 2;
-  return sorted.length.isOdd ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  return sorted.length.isOdd
+      ? sorted[mid]
+      : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
 /// Turns a stream of analyser frames into one reading per hit: wait for the
@@ -125,7 +140,11 @@ class HitTracker {
   bool get listening => _hitAt != null;
 
   /// Feed one frame. Returns a frequency when a hit's reading is complete.
-  double? feed({required double level, required double? hz, required double nowMs}) {
+  double? feed({
+    required double level,
+    required double? hz,
+    required double nowMs,
+  }) {
     final hitAt = _hitAt;
     if (hitAt == null) {
       // A hit is a jump well above the recent background level.
@@ -142,7 +161,8 @@ class HitTracker {
       _pitches.add(hz);
     }
     // Done when the window has passed or the ring has died away.
-    if (since > skipMs + listenMs || (since > skipMs && level < threshold / 4)) {
+    if (since > skipMs + listenMs ||
+        (since > skipMs && level < threshold / 4)) {
       _hitAt = null;
       _floor = level;
       if (_pitches.length < minFrames) return null;
@@ -165,8 +185,9 @@ class LugCheck {
   final List<double> readings;
   final double center;
 
-  List<double> get offsetsCents =>
-      [for (final r in readings) centsBetween(center, r)];
+  List<double> get offsetsCents => [
+    for (final r in readings) centsBetween(center, r),
+  ];
 
   bool get isEven =>
       readings.length >= 2 && offsetsCents.every((c) => c.abs() <= evenCents);
@@ -180,5 +201,89 @@ class LugCheck {
       if (offs[i].abs() > offs[worst].abs()) worst = i;
     }
     return offs[worst].abs() > evenCents ? worst : null;
+  }
+}
+
+/// The tuner's lug slots: one reading per tension rod, in order around the
+/// drum. Readings fill the next empty lug; tapping a lug re-reads it, and a
+/// single lug can be cleared without losing the others.
+class LugSet {
+  LugSet(int count) : _hz = List<double?>.filled(_clampCount(count), null);
+
+  static const minLugs = 3, maxLugs = 16;
+  static int _clampCount(int n) => n.clamp(minLugs, maxLugs);
+
+  List<double?> _hz;
+  int _next = 0;
+
+  int get count => _hz.length;
+
+  /// The lug the next reading goes to (0-based).
+  int get next => _next;
+  List<double?> get readings => List.unmodifiable(_hz);
+  int get filled => _hz.where((h) => h != null).length;
+
+  /// Changes the number of lugs, keeping the readings that still fit.
+  void resize(int n) {
+    final size = _clampCount(n);
+    _hz = [for (var i = 0; i < size; i++) i < _hz.length ? _hz[i] : null];
+    if (_next >= size) _next = 0;
+  }
+
+  /// Stores a reading in the next lug, then moves on to the next empty lug
+  /// (or simply the next lug round once all are full).
+  void record(double hz) {
+    _hz[_next] = hz;
+    for (var step = 1; step <= count; step++) {
+      final i = (_next + step) % count;
+      if (_hz[i] == null) {
+        _next = i;
+        return;
+      }
+    }
+    _next = (_next + 1) % count;
+  }
+
+  /// The next reading goes to lug [i] (to re-read it).
+  void select(int i) => _next = i.clamp(0, count - 1);
+
+  /// Removes lug [i]'s reading; it becomes the next to read.
+  void clear(int i) {
+    _hz[i] = null;
+    _next = i;
+  }
+
+  void clearAll() {
+    _hz = List<double?>.filled(count, null);
+    _next = 0;
+  }
+
+  LugCheck get _check => LugCheck([for (final h in _hz) ?h]);
+
+  /// The middle (median) reading, or 0 with none.
+  double get center => _check.center;
+
+  /// Each lug's distance from the middle in cents (null where not read).
+  List<double?> get offsetsCents {
+    final c = center;
+    return [for (final h in _hz) h == null ? null : centsBetween(c, h)];
+  }
+
+  /// Every read lug within [LugCheck.evenCents] of the middle (2+ read).
+  bool get isEven => _check.isEven;
+
+  /// The lug furthest from the middle, if it's outside the even band.
+  int? get worst {
+    if (filled < 2) return null;
+    final offs = offsetsCents;
+    int? worst;
+    for (var i = 0; i < offs.length; i++) {
+      final o = offs[i];
+      if (o == null) continue;
+      if (worst == null || o.abs() > offs[worst]!.abs()) worst = i;
+    }
+    return worst != null && offs[worst]!.abs() > LugCheck.evenCents
+        ? worst
+        : null;
   }
 }
