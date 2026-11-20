@@ -1,6 +1,6 @@
 # Bookmark: where Drum Studio stands
 
-**Saved:** 2026-11-20 (after PR #15) · **Owner:** David Petry
+**Saved:** 2026-11-20 (after PR #16, Phase 3 brainstorm) · **Owner:** David Petry
 **To resume:** open a new Claude Code session on this repo and say
 *"Read docs/BOOKMARK.md and docs/ux-ui-audit-2026-11-20.md, then continue."*
 
@@ -56,8 +56,18 @@
 
 1. ~~**UX audit fixes**~~: all 14 items in `docs/ux-ui-audit-2026-11-20.md` are done. A fresh
    audit after real-device testing is a good next check.
-2. **Phase 3: play-along grooves** (synthesized rock, bossa, songo, swing, clave) that follow the
-   metronome's tempo, with voice muting.
+2. **Phase 3: play-along grooves.** Brainstormed with the Superpowers plugin on 2026-11-20 (no
+   design approved yet, nothing built). Agreed so far:
+   - **Why:** practise time and feel against a band-like backing, not learn the grooves.
+   - **Forms:** 12-bar blues and 32-bar AABA, any style with either form; generic changes
+     (blues in F, AABA in C) so no song copyright; on-screen form map with chorus and bar.
+   - **Band moments (option C):** intro, trading (band lays out every other 4 or 8 bars),
+     stop-time hits, ending after a set number of choruses. Mute any part, e.g. the drums.
+   - **Sound test result:** fully synthesized instruments (walking bass, piano comping, ride)
+     sounded **"too cheesy"**, so pure synthesis is ruled out.
+   - **Open decision:** A. freely licensed recorded instrument samples shipped with the app
+     (offline, ~5–15 MB, licences in THIRD-PARTY-NOTICES.md; new sound test first), or
+     B. park Phase 3. Then: design doc in `docs/superpowers/specs/`, plan, build.
 3. **Real-device testing:** iPhone silent switch, Android vibration, tuner on a real drum, installing
    and using offline.
 4. **GitHub security switches (David, in Settings):** two-factor sign-in, secret scanning with
@@ -76,6 +86,8 @@
   AudioPod, Develop21 and EasedUP don't connect from cloud sessions; use the desktop app or claude.ai.
 - **Lessons and the Exercises page:** education-agent-skills such as `spaced-practice-scheduler`,
   `practice-problem-sequence-designer` and `worked-example-fading-designer`.
+- Superpowers (Jesse Vincent) is installed: brainstorm → design → plan → test-first build.
+- Being turned off by David: AudioPod and audiorective (neither is part of the plan).
 - Skipped: audiorective (a second, npm-based audio engine would duplicate the Dart engine and add
   third-party code); EasedUP (school curricula, not private drum teaching).
 
