@@ -78,10 +78,17 @@ extension type Element._(JSObject _) implements JSObject {
   external void appendChild(Element child);
   external void replaceChildren();
   external void addEventListener(String type, JSFunction listener);
+  external Rect getBoundingClientRect();
+  external void scrollIntoView(JSObject options);
   external void setAttribute(String name, String value);
   external void removeAttribute(String name);
   external String? getAttribute(String name);
   external void focus();
+}
+
+extension type Rect._(JSObject _) implements JSObject {
+  external double get top;
+  external double get bottom;
 }
 
 extension type CssStyle._(JSObject _) implements JSObject {
@@ -116,6 +123,10 @@ extension type KeyEvent._(JSObject _) implements JSObject {
 
 extension type Event._(JSObject _) implements JSObject {
   external void preventDefault();
+
+  /// True only for events from a real person (a tap, click or key), not
+  /// ones a script made up.
+  external bool get isTrusted;
 }
 
 // ---- Web Audio --------------------------------------------------------------
@@ -130,7 +141,11 @@ extension type AudioContext._(JSObject _) implements JSObject {
   external OscillatorNode createOscillator();
   external GainNode createGain();
   external BiquadFilterNode createBiquadFilter();
-  external AudioBuffer createBuffer(int channels, int length, double sampleRate);
+  external AudioBuffer createBuffer(
+    int channels,
+    int length,
+    double sampleRate,
+  );
   external AudioBufferSourceNode createBufferSource();
   external AnalyserNode createAnalyser();
   external AudioNode createMediaStreamSource(MediaStream stream);
@@ -204,6 +219,50 @@ void onId(String id, String type, void Function() handler) =>
     on(el<Element>(id), type, handler);
 
 bool get hasAudio => globalContext.has('AudioContext');
+
+/// True when this page is shown inside another page (an iframe). Used to
+/// refuse the microphone there, so no other site can embed the tuner and
+/// trick someone into granting access ("clickjacking").
+bool get isFramed {
+  try {
+    final top = globalContext['top'];
+    final self = globalContext['self'];
+    return !top.strictEquals(self).toDart;
+  } catch (_) {
+    return true; // can't tell: assume the worst
+  }
+}
+
+/// The visible height of the page area, in CSS pixels.
+double get viewportHeight =>
+    (globalContext['innerHeight'] as JSNumber).toDartDouble;
+
+/// Listens on the window (resize, hashchange, scroll).
+void onWindow(String type, void Function() handler) =>
+    globalContext.callMethod<JSAny?>(
+      'addEventListener'.toJS,
+      type.toJS,
+      ((JSAny? _) => handler()).toJS,
+    );
+
+/// The URL fragment without its "#", e.g. "tuner".
+String get urlHash {
+  final location = globalContext['location'] as JSObject;
+  return (location['hash'] as JSString).toDart.replaceFirst('#', '');
+}
+
+/// Changes the URL fragment without adding a history entry or jumping.
+void replaceHash(String hash) {
+  try {
+    final history = globalContext['history'] as JSObject;
+    history.callMethod<JSAny?>(
+      'replaceState'.toJS,
+      ''.toJS, // not null: a null argument ends the argument list early
+      ''.toJS,
+      '#$hash'.toJS,
+    );
+  } catch (_) {}
+}
 
 bool get prefersReducedMotion =>
     matchMedia('(prefers-reduced-motion: reduce)').matches;

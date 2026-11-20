@@ -20,9 +20,82 @@ void main() {
   registerServiceWorker();
   if (document.getElementById('guide') == null) return;
   final guide = Guide()..wire();
-  Tuner(guide).wire();
+  final tuner = Tuner(guide)..wire();
   Planner().wire();
   _renderSources();
+  final tabs = Tabs((id) {
+    // Never leave the microphone open on a tab you can't see.
+    if (id != 'tuner') tuner.pause();
+  })..wire();
+  final changeDrum = el<Element>('change-drum')..hidden = false;
+  on(changeDrum, 'click', () => tabs.select('guide', focus: true));
+}
+
+// ---- Section tabs ------------------------------------------------------------------
+
+/// WAI-ARIA tabs: one section at a time, arrow keys between tabs, and the
+/// choice kept in the URL (#tuner, #guide …) and on the device.
+class Tabs {
+  Tabs(this.onChange);
+  final void Function(String id) onChange;
+
+  static const ids = ['tuner', 'guide', 'planner', 'howto'];
+  static const _key = 'ds-tuning-tab';
+
+  final Element list = el('tuning-tabs');
+  late final _tabs = [for (final id in ids) el<Element>('tab-$id')];
+  late final _panels = [for (final id in ids) el<Element>(id)];
+
+  void wire() {
+    for (var i = 0; i < ids.length; i++) {
+      _panels[i]
+        ..setAttribute('role', 'tabpanel')
+        ..setAttribute('aria-labelledby', 'tab-${ids[i]}');
+      final id = ids[i];
+      on(_tabs[i], 'click', () => select(id));
+    }
+    list.addEventListener(
+      'keydown',
+      ((KeyEvent e) {
+        final at = _tabs.indexWhere((t) => t == document.activeElement);
+        if (at < 0) return;
+        final to = switch (e.key) {
+          'ArrowRight' => (at + 1) % ids.length,
+          'ArrowLeft' => (at - 1 + ids.length) % ids.length,
+          'Home' => 0,
+          'End' => ids.length - 1,
+          _ => -1,
+        };
+        if (to < 0) return;
+        e.preventDefault();
+        select(ids[to], focus: true);
+      }).toJS,
+    );
+    list.hidden = false;
+    final fromUrl = urlHash, saved = loadText(_key);
+    select(
+      ids.contains(fromUrl)
+          ? fromUrl
+          : (ids.contains(saved) ? saved! : 'tuner'),
+    );
+    onWindow('hashchange', () {
+      if (ids.contains(urlHash)) select(urlHash);
+    });
+  }
+
+  void select(String id, {bool focus = false}) {
+    for (var i = 0; i < ids.length; i++) {
+      final on = ids[i] == id;
+      _tabs[i]
+        ..setAttribute('aria-selected', '$on')
+        ..setAttribute('tabindex', on ? '0' : '-1');
+      _panels[i].hidden = !on;
+    }
+    saveText(_key, id);
+    replaceHash(id);
+    if (focus) _tabs[ids.indexOf(id)].focus();
+    onChange(id);
+  }
 }
 
 const _drumKey = 'ds-drum';
@@ -298,6 +371,12 @@ class Tuner {
   double? _last;
 
   late final JSFunction _drawJs = _draw.toJS;
+  bool _starting = false;
+
+  /// When a tap was last heard; after [idleLimitMs] of quiet the microphone
+  /// switches itself off.
+  double _lastActivity = 0;
+  static const idleLimitMs = 120000;
 
   void wire() {
     final devices = navigator.mediaDevices;
@@ -306,7 +385,24 @@ class Tuner {
       el<Element>('no-mic').hidden = false;
       return;
     }
-    on(startButton, 'click', () => _running ? _stop() : _start());
+    startButton.addEventListener(
+      'click',
+      ((Event e) {
+        // Only a real tap or click may open the microphone; scripted clicks
+        // are ignored.
+        if (!e.isTrusted) return;
+        _running ? _stop() : _start();
+      }).toJS,
+    );
+    // Close the microphone whenever the page can't be seen: another app or
+    // tab, a locked screen, or leaving the page.
+    document.addEventListener(
+      'visibilitychange',
+      ((JSAny? _) {
+        if (document.hidden) pause('Tuner off because the page was hidden.');
+      }).toJS,
+    );
+    onWindow('pagehide', () => pause());
     on(sensitivity, 'input', _readSensitivity);
     onId('lugs-clear', 'click', () {
       _lugs.clear();
@@ -326,6 +422,12 @@ class Tuner {
   }
 
   Future<void> _start() async {
+    if (_starting || _running) return; // one request at a time
+    // Refuse inside another site's frame (see isFramed).
+    if (isFramed) {
+      _say(_micProblem('framed'));
+      return;
+    }
     // Browsers only offer the microphone on secure (https) pages.
     if (globalContext['isSecureContext'] case final JSBoolean secure
         when !secure.toDart) {
@@ -333,14 +435,18 @@ class Tuner {
       return;
     }
     _say('Asking for the microphone…');
+    _starting = true;
     try {
       final constraints =
           {
+                // Ask for the least we need: one audio channel, no camera.
                 'audio': {
+                  'channelCount': 1,
                   'echoCancellation': false,
                   'noiseSuppression': false,
                   'autoGainControl': false,
                 },
+                'video': false,
               }.jsify()!
               as JSObject;
       final stream = await navigator.mediaDevices!
@@ -363,6 +469,7 @@ class Tuner {
       _db = Float32List(spectrum.fftSize ~/ 2);
       _samples = Float32List(wave.fftSize);
       _running = true;
+      _lastActivity = performance.now();
       startButton
         ..textContent = 'Stop tuner'
         ..setAttribute('aria-pressed', 'true')
@@ -372,6 +479,8 @@ class Tuner {
       _frame = requestAnimationFrame(_drawJs);
     } catch (e) {
       _say(_micProblem(_errorName(e)));
+    } finally {
+      _starting = false;
     }
   }
 
@@ -396,11 +505,20 @@ class Tuner {
       'No microphone was found. Connect one, or check that the device’s microphone is switched on, then press Start tuner again.',
     'NotReadableError' || 'AbortError' =>
       'The microphone is busy, probably in a call or another recording app. Close that app, then press Start tuner again.',
+    'framed' =>
+      'For your privacy, the tuner only uses the microphone when Drum Studio is open in its own tab. Open https://davidpetry-cloud.github.io/drum-studio/tuning.html directly.',
     'insecure' =>
       'The tuner needs a secure (https) page to use the microphone. Open the app from https://davidpetry-cloud.github.io/drum-studio/tuning.html.',
     _ =>
       'The microphone couldn’t start. Check that this site is allowed to use it (usually the icon by the address bar), then press Start tuner again.',
   };
+
+  /// Turns the tuner off if it's on (its tab or the page was hidden).
+  void pause([String why = 'Tuner off while you’re on another tab.']) {
+    if (!_running) return;
+    _stop();
+    _say('$why The microphone is closed.');
+  }
 
   void _stop() {
     _running = false;
@@ -443,6 +561,12 @@ class Tuner {
         ? 'Reading…'
         : 'Listening: tap the drum';
     if (reading != null) _record(reading);
+    if (_hits.listening) _lastActivity = now;
+    // Don't leave the microphone open if nobody is tuning.
+    if (now - _lastActivity > idleLimitMs) {
+      pause('Tuner off after 2 minutes without a tap.');
+      return;
+    }
     _frame = requestAnimationFrame(_drawJs);
   }
 

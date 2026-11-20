@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<!-- Security policy: everything comes from this site; no inline scripts or styles.
-     Set here because GitHub Pages can't send it as a header. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; media-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<!-- Security policy: everything comes from this site; no inline scripts or styles;
+     and the page may not send data anywhere (connect-src 'none'), so nothing,
+     including microphone audio, can leave the device. Set here because GitHub
+     Pages can't send it as a header. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; media-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Drum Tuning · Drum Studio</title>
@@ -41,6 +43,62 @@
 
   <noscript><p class="panel notice">The tuner and the guide need JavaScript turned on. The tuning steps below still work without it.</p></noscript>
 
+  <!-- Section tabs: shown by tuning.dart, which then shows one section at a
+       time. Without JavaScript every section stays visible. -->
+  <div class="tabs" role="tablist" aria-label="Tuning sections" id="tuning-tabs" hidden>
+    <button type="button" role="tab" class="tab" id="tab-tuner" aria-controls="tuner" aria-selected="true">Tuner</button>
+    <button type="button" role="tab" class="tab" id="tab-guide" aria-controls="guide" aria-selected="false" tabindex="-1">Your Drum</button>
+    <button type="button" role="tab" class="tab" id="tab-planner" aria-controls="planner" aria-selected="false" tabindex="-1">Planner</button>
+    <button type="button" role="tab" class="tab" id="tab-howto" aria-controls="howto" aria-selected="false" tabindex="-1">How to Tune</button>
+  </div>
+
+  <!-- Tuner -->
+  <section class="panel" id="tuner" aria-labelledby="tuner-title">
+    <h2 id="tuner-title">Tuner</h2>
+    <p class="notice" id="no-mic" hidden>This browser can’t open a microphone here. The tuner needs a secure (https) page in a current browser.</p>
+    <div id="tuner-body">
+      <div class="actions">
+        <button type="button" class="btn-primary" id="mic-start" aria-pressed="false">Start tuner</button>
+        <span class="listen" id="listen-state">Microphone off</span>
+      </div>
+      <p class="hint tuner-tip">Tap lightly with a stick about an inch from each tension rod to compare lugs. To read the drum’s note, hit the centre. For a clean reading of one head, rest a hand lightly on the other head or lay the drum on a soft surface. The sound is analysed on this device and never sent anywhere.</p>
+      <div class="level" id="level" aria-hidden="true"><span></span></div>
+
+      <div class="readout">
+        <p class="reading-hz" id="reading-hz">– Hz</p>
+        <p class="reading-note" id="reading-note">Tap the drum</p>
+        <div class="cents" aria-hidden="true">
+          <span class="cents-scale"><span>−50¢</span><span>0</span><span>+50¢</span></span>
+          <span class="needle" id="needle" hidden></span>
+        </div>
+      </div>
+
+      <div class="target">
+        <p class="hint" id="target-line"></p>
+        <button type="button" class="link-btn" id="change-drum" hidden>Change drum</button>
+        <div class="target-bar" aria-hidden="true">
+          <span class="zone"></span>
+          <span class="target-mark" id="target-mark" hidden></span>
+          <span class="target-ends"><span>Low</span><span>Medium</span><span>High</span></span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="sensitivity">Sensitivity</label>
+        <input type="range" id="sensitivity" min="1" max="10" step="1" value="6" aria-describedby="sens-hint">
+        <p class="hint" id="sens-hint">Turn it down in a noisy room, up if light taps don’t register.</p>
+      </div>
+
+      <div class="lugs-head">
+        <h3 class="label">Lug Readings</h3>
+        <button type="button" class="link-btn" id="lugs-clear">Clear</button>
+      </div>
+      <ol class="lugs" id="lugs"></ol>
+      <p class="lug-status" id="lug-status"></p>
+      <p class="status" id="tuner-status" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
   <!-- Guide: your drum -->
   <section class="panel" id="guide" aria-labelledby="guide-title">
     <h2 id="guide-title">Your Drum</h2>
@@ -64,52 +122,6 @@
       <p class="hint" id="range-scaled"></p>
     </div>
     <ul class="notes" id="notes"></ul>
-  </section>
-
-  <!-- Tuner -->
-  <section class="panel" id="tuner" aria-labelledby="tuner-title">
-    <h2 id="tuner-title">Tuner</h2>
-    <p class="notice" id="no-mic" hidden>This browser can’t open a microphone here. The tuner needs a secure (https) page in a current browser.</p>
-    <div id="tuner-body">
-      <p class="hint">Tap lightly with a stick about an inch from each tension rod to compare lugs. To read the drum’s note, hit the centre. For a clean reading of one head, rest a hand lightly on the other head or lay the drum on a soft surface. The sound is analysed on this device and never sent anywhere.</p>
-      <div class="actions">
-        <button type="button" class="btn-primary" id="mic-start" aria-pressed="false">Start tuner</button>
-        <span class="listen" id="listen-state">Microphone off</span>
-      </div>
-      <div class="level" id="level" aria-hidden="true"><span></span></div>
-
-      <div class="readout">
-        <p class="reading-hz" id="reading-hz">– Hz</p>
-        <p class="reading-note" id="reading-note">Tap the drum</p>
-        <div class="cents" aria-hidden="true">
-          <span class="cents-scale"><span>−50¢</span><span>0</span><span>+50¢</span></span>
-          <span class="needle" id="needle" hidden></span>
-        </div>
-      </div>
-
-      <div class="target">
-        <p class="hint" id="target-line"></p>
-        <div class="target-bar" aria-hidden="true">
-          <span class="zone"></span>
-          <span class="target-mark" id="target-mark" hidden></span>
-          <span class="target-ends"><span>Low</span><span>Medium</span><span>High</span></span>
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="label" for="sensitivity">Sensitivity</label>
-        <input type="range" id="sensitivity" min="1" max="10" step="1" value="6" aria-describedby="sens-hint">
-        <p class="hint" id="sens-hint">Turn it down in a noisy room, up if light taps don’t register.</p>
-      </div>
-
-      <div class="lugs-head">
-        <h3 class="label">Lug Readings</h3>
-        <button type="button" class="link-btn" id="lugs-clear">Clear</button>
-      </div>
-      <ol class="lugs" id="lugs"></ol>
-      <p class="lug-status" id="lug-status"></p>
-      <p class="status" id="tuner-status" role="status" aria-live="polite"></p>
-    </div>
   </section>
 
   <!-- Planner -->
@@ -145,24 +157,26 @@
     <p class="status" id="plan-summary" role="status" aria-live="polite"></p>
   </section>
 
-  <!-- Method -->
-  <section class="panel" aria-labelledby="steps-title">
-    <h2 id="steps-title">How to Tune a Head</h2>
-    <ol class="steps">
-      <li>Seat the head: press the centre firmly with your palm a few times so it settles on the bearing edge.</li>
-      <li>Finger-tighten every rod evenly until each one just touches the hoop.</li>
-      <li>Tighten in a star (criss-cross) pattern, the same small turn on every rod: half turns at first, then quarter turns as you get close.</li>
-      <li>Tap about an inch in from each rod and listen, or use the tuner. Bring any lug that sounds off up or down to match the others.</li>
-      <li>Tune the resonant head the same way, then choose how it relates to the batter head.</li>
-      <li>Play the drum with the rest of the kit and adjust by ear.</li>
-    </ol>
-  </section>
+  <div id="howto" class="stack">
+    <!-- Method -->
+    <section class="panel" aria-labelledby="steps-title">
+      <h2 id="steps-title">How to Tune a Head</h2>
+      <ol class="steps">
+        <li>Seat the head: press the centre firmly with your palm a few times so it settles on the bearing edge.</li>
+        <li>Finger-tighten every rod evenly until each one just touches the hoop.</li>
+        <li>Tighten in a star (criss-cross) pattern, the same small turn on every rod: half turns at first, then quarter turns as you get close.</li>
+        <li>Tap about an inch in from each rod and listen, or use the tuner. Bring any lug that sounds off up or down to match the others.</li>
+        <li>Tune the resonant head the same way, then choose how it relates to the batter head.</li>
+        <li>Play the drum with the rest of the kit and adjust by ear.</li>
+      </ol>
+    </section>
 
-  <section class="panel" aria-labelledby="sources-title">
-    <h2 id="sources-title">Sources</h2>
-    <p class="hint">Researched November 2026. The sources don’t always agree, and where they don’t, the guide says so. Pitch ranges are starting points, not rules.</p>
-    <ol class="sources" id="sources"></ol>
-  </section>
+    <section class="panel" aria-labelledby="sources-title">
+      <h2 id="sources-title">Sources</h2>
+      <p class="hint">Researched November 2026. The sources don’t always agree, and where they don’t, the guide says so. Pitch ranges are starting points, not rules.</p>
+      <ol class="sources" id="sources"></ol>
+    </section>
+  </div>
 </main>
 
 <footer class="foot">

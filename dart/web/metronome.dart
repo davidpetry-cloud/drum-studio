@@ -24,8 +24,9 @@ void main() {
     document.getElementById('no-audio')?.hidden = false;
     return;
   }
-  Metronome().wire();
+  final metronome = Metronome()..wire();
   panel.hidden = false;
+  metronome.updateTransport();
 }
 
 const _lastKey = 'ds-last';
@@ -44,6 +45,9 @@ class Metronome {
   final Element tempoUnit = el('tempo-unit');
   final Element tempoWord = el('tempo-word');
   final Element startButton = el('start');
+  final Element transport = el('transport');
+  final Element quickStart = el('q-start');
+  final Element quickBpm = el('q-bpm');
   final Element flash = el('flash');
   final Element position = el('position');
   final Element grid = el('grid');
@@ -125,6 +129,13 @@ class Metronome {
     onId('bpm-up-5', 'click', () => _nudge(5));
     on(startButton, 'click', toggle);
     onId('tap', 'click', _tap);
+    on(quickStart, 'click', toggle);
+    onId('q-tap', 'click', _tap);
+    onId('q-down', 'click', () => _nudge(-1));
+    onId('q-up', 'click', () => _nudge(1));
+    // Show the quick controls only while the main Start button is out of view.
+    document.addEventListener('scroll', ((JSAny? _) => updateTransport()).toJS);
+    onWindow('resize', updateTransport);
 
     on(beatsSelect, 'change', _meterFromSelects);
     on(unitSelect, 'change', _meterFromSelects);
@@ -254,6 +265,7 @@ class Metronome {
     bpmRange.value = '$bpm';
     if (!keepTyping) bpmInput.value = '$bpm';
     tempoWord.textContent = tempoMarking(bpm);
+    quickBpm.textContent = '$bpm';
     final unit = groove.dottedBeat && groove.meter.isCompound
         ? 'dotted quarter'
         : switch (groove.meter.unit) {
@@ -618,10 +630,7 @@ class Metronome {
     _tick();
     _timer = setInterval(_tickJs, 25);
     _frame = requestAnimationFrame(_drawJs);
-    startButton
-      ..textContent = 'Stop'
-      ..setAttribute('aria-pressed', 'true')
-      ..classList.toggle('is-running', true);
+    _showRunning(true);
     _wake.acquire();
     _say('Playing at ${groove.bpm} BPM, ${groove.meter.label}.');
   }
@@ -640,13 +649,30 @@ class Metronome {
     // Go back to where a speed run started.
     if (speed.enabled) groove.bpm = seq.startBpm;
     _light(null);
-    startButton
-      ..textContent = 'Start'
-      ..setAttribute('aria-pressed', 'false')
-      ..classList.toggle('is-running', false);
+    _showRunning(false);
     _showTempo();
     _showSpeedProgress();
     _say(speed.enabled ? 'Stopped. You reached $reached BPM.' : 'Stopped.');
+  }
+
+  void _showRunning(bool running) {
+    for (final button in [startButton, quickStart]) {
+      button
+        ..textContent = running ? 'Stop' : 'Start'
+        ..setAttribute('aria-pressed', '$running')
+        ..classList.toggle('is-running', running);
+    }
+  }
+
+  /// Hides the quick controls while the main Start button is on screen, so
+  /// there's never a second Start in view.
+  void updateTransport() {
+    final r = startButton.getBoundingClientRect();
+    final onScreen = r.bottom > 0 && r.top < viewportHeight;
+    if (transport.hidden == onScreen) return;
+    transport.hidden = onScreen;
+    final body = (document as JSObject)['body'] as Element;
+    body.classList.toggle('has-transport', !onScreen);
   }
 
   void _tick() {

@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<!-- Security policy: everything comes from this site; no inline scripts or styles.
-     Set here because GitHub Pages can't send it as a header. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; media-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<!-- Security policy: everything comes from this site; no inline scripts or styles;
+     and the page may not send data anywhere (connect-src 'none'), so nothing,
+     including microphone audio, can leave the device. Set here because GitHub
+     Pages can't send it as a header. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; media-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Metronome · Drum Studio</title>
@@ -208,6 +210,16 @@
     </section>
   </div>
 </main>
+
+<!-- Quick controls: appear at the bottom of the screen whenever the main
+     Start button is scrolled out of view (see metronome.dart). -->
+<div class="transport" id="transport" role="region" aria-label="Quick controls" hidden>
+  <button type="button" class="transport-step" id="q-down" aria-label="Slower by 1 BPM">−</button>
+  <span class="transport-bpm"><span id="q-bpm">96</span> <span class="transport-unit">BPM</span></span>
+  <button type="button" class="transport-step" id="q-up" aria-label="Faster by 1 BPM">+</button>
+  <button type="button" class="btn-ghost transport-tap" id="q-tap">Tap</button>
+  <button type="button" class="btn-primary transport-start" id="q-start" aria-pressed="false">Start</button>
+</div>
 
 <footer class="foot">
   <p>Drum Studio by <a href="https://david-petry.netlify.app/">David Petry</a> · <a href="https://david-petry.netlify.app/drum-exercises.html">Free drum exercises</a></p>

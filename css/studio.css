@@ -737,9 +737,93 @@ kbd {
   text-align: center;
 }
 
+/* Quick controls: fixed to the bottom of the screen while the main Start
+   button is out of view. Bottom placement keeps them in thumb reach. */
+.transport {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 900;
+  display: grid;
+  grid-template-columns: 48px auto 48px 1fr 1.4fr;
+  align-items: center;
+  gap: 8px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 10px max(12px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left));
+  background: var(--nav-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line-2);
+  box-shadow: 0 -12px 32px -24px rgba(0, 0, 0, 0.6);
+}
+@media (min-width: 641px) {
+  .transport { bottom: 12px; border: 1px solid var(--line-2); border-radius: var(--pill); }
+}
+.transport-step {
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--muted2);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text);
+  font-size: var(--fs-xl);
+  line-height: 1;
+}
+.transport-step:hover { border-color: var(--amber); color: var(--amber); }
+.transport-bpm {
+  min-width: 4.2ch;
+  color: var(--white);
+  font-family: var(--display);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+}
+.transport-unit { color: var(--muted2); font-family: var(--mono); font-size: var(--fs-xs); font-weight: 500; }
+.transport .btn-primary, .transport .btn-ghost { min-width: 0; padding: 0 12px; }
+/* Room at the end of the page so the bar never covers the footer */
+body.has-transport { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+
 /* ============================================================
    TUNING — tuning.html; behaviour in js/tuning.js
    ============================================================ */
+/* Section tabs. The chosen tab is filled and underlined, so it shows by
+   shape as well as colour. */
+.tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--pill);
+  background: var(--card);
+  scrollbar-width: none;
+}
+.tab {
+  flex: 1 0 auto;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--pill);
+  background: transparent;
+  color: var(--muted2);
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--white); }
+.tab[aria-selected="true"] {
+  background: var(--amber);
+  color: var(--on-accent);
+  text-decoration: underline 2px;
+  text-underline-offset: 5px;
+}
+.stack { display: grid; gap: 24px; }
+#change-drum { margin-top: -4px; }
+
 .range-card {
   margin: 8px 0 20px;
   padding: 20px;
@@ -847,6 +931,7 @@ kbd {
    ============================================================ */
 @media (forced-colors: active) {
   .btn-primary, .chip, .preset-load, .cell { border: 1px solid ButtonText; }
+  .tab[aria-selected="true"],
   .chip[aria-pressed="true"],
   .cell.is-on,
   .flash:not(.is-fading):not(.is-silent) {

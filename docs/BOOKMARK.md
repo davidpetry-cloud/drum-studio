@@ -37,6 +37,7 @@
 | **Licensing:** code PolyForm Noncommercial 1.0.0, content CC BY-NC 4.0 | Noncommercial collaboration welcome with credit (`Required Notice:` line); commercial use needs permission. States AI assistance honestly; app name not claimed as copyright |
 | Website: code PolyForm NC, content all rights reserved | Code open to collaborate; PDFs, prompt book, art, photos and music stay protected |
 | Cowbell removed | David's call |
+| Microphone hardening (see `SECURITY.md`) | Real taps only, refused inside other sites' frames, auto-off (2 min idle, hidden page, other tab), minimal request, and `connect-src 'none'` so nothing can leave the page. Hiding code isn't real security; these are |
 
 ## How to change things
 
@@ -47,9 +48,9 @@
 
 ## Next up (backlog)
 
-1. **UX audit fixes:** see `docs/ux-ui-audit-2026-11-20.md`. Done: #3 undo delete, #6 trainer
-   progress, #8 mic messages. Next: the sticky phone transport bar (#1) and the tuning page
-   tabs (#2), then #4, #13, #12.
+1. **UX audit fixes:** see `docs/ux-ui-audit-2026-11-20.md`. Done: #1 quick-controls bar,
+   #2 tuning tabs, #3 undo delete, #6 trainer progress, #8 mic messages. Next: #4 compact phone
+   header, #5 count-in, #9 subdivision ticks, #7 per-lug tuner, then the rest.
 2. **Phase 3: play-along grooves** (synthesized rock, bossa, songo, swing, clave) that follow the
    metronome's tempo, with voice muting.
 3. **Real-device testing:** iPhone silent switch, Android vibration, tuner on a real drum, installing
