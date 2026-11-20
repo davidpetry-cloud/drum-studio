@@ -33,7 +33,7 @@
 <main id="main">
   <header class="pagehead">
     <p class="eyebrow">Sound</p>
-    <h1>Drum tuning</h1>
+    <h1>Drum Tuning</h1>
     <p class="lede">Tell the guide about your drum to get a starting pitch range, then use the tuner to even out each lug. The numbers get you close. Your ears finish the job.</p>
   </header>
 
@@ -113,14 +113,19 @@
   <!-- Planner -->
   <section class="panel" id="planner" aria-labelledby="planner-title">
     <h2 id="planner-title">Tom interval planner</h2>
-    <p class="hint">Spacing toms by a musical interval makes fills sound melodic. Pick your toms, an interval, and a pitch for the smallest one.</p>
+    <p class="hint">Spacing toms by a musical interval makes fills sound melodic, but it’s your kit: use one interval, a different one for each gap, or tune each tom freely and see what you get.</p>
     <fieldset class="field">
       <legend class="label">Your toms</legend>
       <div class="chips" id="plan-sizes"></div>
     </fieldset>
+    <fieldset class="field">
+      <legend class="label">Spacing</legend>
+      <div class="chips" id="plan-spacing"></div>
+      <p class="hint" id="plan-spacing-hint"></p>
+    </fieldset>
     <div class="form-grid">
-      <label class="field"><span class="label">Interval between toms</span><select id="plan-interval"></select></label>
-      <div class="field">
+      <label class="field" id="plan-interval-row"><span class="label">Interval between toms</span><select id="plan-interval"></select></label>
+      <div class="field" id="plan-top-row">
         <label class="label" for="plan-top">Smallest tom (Hz)</label>
         <div class="inline">
           <input type="number" id="plan-top" min="30" max="1000" step="1" inputmode="decimal">
@@ -130,8 +135,8 @@
     </div>
     <div class="table-wrap">
       <table class="plan">
-        <caption class="visually-hidden">Target pitch for each tom</caption>
-        <thead><tr><th scope="col">Tom</th><th scope="col">Target</th><th scope="col">Note</th><th scope="col">Range check</th></tr></thead>
+        <caption class="visually-hidden">Pitch for each tom and the interval to the next one</caption>
+        <thead><tr><th scope="col">Tom</th><th scope="col">Pitch</th><th scope="col">Note</th><th scope="col">Interval to next tom</th><th scope="col">Range check</th></tr></thead>
         <tbody id="plan-out"></tbody>
       </table>
     </div>
