@@ -1,6 +1,6 @@
 # Bookmark: where Drum Studio stands
 
-**Saved:** 2026-11-20 (Phase 3 parked) · **Owner:** David Petry
+**Saved:** 2026-11-21 (checklists handed over) · **Owner:** David Petry
 **To resume:** open a new Claude Code session on this repo and say
 *"Read docs/BOOKMARK.md and docs/ux-ui-audit-2026-11-20.md, then continue."*
 
@@ -51,6 +51,22 @@
 2. Commit the compiled `js/` along with the source; open a pull request.
 3. Merging to `main` publishes automatically in about a minute (watch the **Actions** tab).
 4. New top-level files: add them to the workflow's copy step and to `FILES` in `sw.js` (bump `VERSION`).
+
+## Right now: David's two checklists
+
+A private checklist page (https://claude.ai/artifact/99auR6DqbSdvc5byf2W2LV) holds both:
+1. **GitHub security** (11 steps): two-factor sign-in and recovery codes; per repo, Dependabot
+   alerts and security updates, secret scanning, push protection, private vulnerability reporting;
+   a "Protect main" ruleset (no deletions, no force pushes, pull request required, 0 approvals).
+2. **Phone and drum test** (18 steps with expected results): install and offline, silent switch,
+   timing at 60/120/200, vibration, tuner lug by lug against another tuner, mic auto-off,
+   large text, screen reader, both themes.
+
+Its **Copy my results** button makes a summary. When David pastes it into a session: fix what
+failed, then run the second UX audit from the real-device notes.
+
+**Optional meanwhile:** practice exercises for the website's Exercises page (easy to hard, each
+linking into Drum Studio at the right settings). Ask who it's for, then outline before building.
 
 ## Next up (backlog)
 
