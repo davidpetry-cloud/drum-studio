@@ -2,8 +2,12 @@
 # Settings → Pages → Source must be "GitHub Actions".
 #
 # 1. check:   the Dart analyzer and checks must pass (nothing ships if not).
-# 2. deploy:  copies only the files the app serves into _site and publishes
-#             them. The compiled js/ is committed, so nothing is built here.
+# 2. build:   copies only the files the app serves into _site and uploads
+#             them. The compiled js/ is committed, so nothing is compiled here.
+# 3. deploy:  publishes the upload. It runs as its own job (GitHub's standard
+#             Pages layout) because deploy-pages looks the upload up through
+#             an API that can take a moment to list it; in the same job it
+#             sometimes found nothing ("No artifacts named github-pages").
 name: Publish to GitHub Pages
 
 on:
@@ -36,12 +40,9 @@ jobs:
           dart analyze --fatal-infos
           dart run test/checks.dart
 
-  deploy:
+  build:
     needs: check
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
       - name: Collect the site files
@@ -53,5 +54,13 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v5
