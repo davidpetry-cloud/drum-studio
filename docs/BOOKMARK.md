@@ -1,6 +1,6 @@
 # Bookmark: where Drum Studio stands
 
-**Saved:** 2026-11-21 (checklists handed over) · **Owner:** David Petry
+**Saved:** 2026-11-23 (website title added) · **Owner:** David Petry
 **To resume:** open a new Claude Code session on this repo and say
 *"Read docs/BOOKMARK.md and docs/ux-ui-audit-2026-11-20.md, then continue."*
 
@@ -51,6 +51,13 @@
 2. Commit the compiled `js/` along with the source; open a pull request.
 3. Merging to `main` publishes automatically in about a minute (watch the **Actions** tab).
 4. New top-level files: add them to the workflow's copy step and to `FILES` in `sw.js` (bump `VERSION`).
+
+## Latest on the website
+
+- 2026-11-23 (david-petry-site PR #28): added **Audio Engineer & Producer** to the homepage intro,
+  the homepage search data (job title and skills), and the Music page (tab title, and the
+  section once called "Music Engineering"). It describes work the site already documents, not a
+  job title. Suggested: use the same title on LinkedIn.
 
 ## Right now: David's two checklists
 
