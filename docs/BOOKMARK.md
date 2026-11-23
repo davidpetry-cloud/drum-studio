@@ -1,6 +1,6 @@
 # Bookmark: where Drum Studio stands
 
-**Saved:** 2026-11-23 (website homepage rewritten) · **Owner:** David Petry
+**Saved:** 2026-11-23 (simulated phone test done) · **Owner:** David Petry
 **To resume:** open a new Claude Code session on this repo and say
 *"Read docs/BOOKMARK.md and docs/ux-ui-audit-2026-11-20.md, then continue."*
 
@@ -76,6 +76,15 @@ A private checklist page (https://claude.ai/artifact/99auR6DqbSdvc5byf2W2LV) hol
 2. **Phone and drum test** (18 steps with expected results): install and offline, silent switch,
    timing at 60/120/200, vibration, tuner lug by lug against another tuner, mic auto-off,
    large text, screen reader, both themes.
+
+**2026-11-23 update:** Claude ran the phone test on a simulated iPhone 13 and Pixel 7. 14 steps
+passed and are marked "Simulated: passed" on the page. Only 4 need real hardware: iPhone silent
+switch, steady timing at 60/120/200 BPM by ear, locking the phone mid-play, and one lug against
+another tuner on a real drum. A full-history secret scan of both repos found nothing; GitHub's
+own scanner refused ("Advanced Security not enabled"), confirming Part 1 is still to do.
+Lessons for re-running the simulation: the pages' `connect-src 'none'` blocks in-page fetch (use
+Playwright's request API); fake leaving the app by setting `document.hidden`; wait for the 0.2 s
+theme fade before contrast checks; use real touch events (CDP) for hold-to-repeat.
 
 Its **Copy my results** button makes a summary. When David pastes it into a session: fix what
 failed, then run the second UX audit from the real-device notes.
