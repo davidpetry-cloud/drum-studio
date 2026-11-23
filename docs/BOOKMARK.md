@@ -1,6 +1,6 @@
 # Bookmark: where Drum Studio stands
 
-**Saved:** 2026-11-23 (website title added) · **Owner:** David Petry
+**Saved:** 2026-11-23 (website homepage rewritten) · **Owner:** David Petry
 **To resume:** open a new Claude Code session on this repo and say
 *"Read docs/BOOKMARK.md and docs/ux-ui-audit-2026-11-20.md, then continue."*
 
@@ -58,6 +58,14 @@
   the homepage search data (job title and skills), and the Music page (tab title, and the
   section once called "Music Engineering"). It describes work the site already documents, not a
   job title. Suggested: use the same title on LinkedIn.
+- 2026-11-23 (david-petry-site PR #29): homepage now leads with audio, not AI consulting.
+  Hero: "Ears on the mix. Hands on the build." / "Audio Engineer, Music Producer and Live Sound
+  Engineer. Drummer, Percussionist and Composer." About: "Many rooms, one good ear". Tab title
+  "David Petry — Audio Engineer & Drummer"; og-card.jpg redrawn.
+- **Facts to keep straight:** live sound since **June 2026**; working alongside professional
+  producers and engineers as a drummer since **1999**. Most current work is audio engineering
+  and live sound. David wants the copy **simple: state roles, no years, don't over-explain**.
+- Website deploys cost Netlify credits (15 of 300 a month per merge): batch changes into one PR.
 
 ## Right now: David's two checklists
 
