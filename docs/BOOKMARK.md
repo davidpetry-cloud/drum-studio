@@ -1,6 +1,6 @@
 # Bookmark: where Drum Studio stands
 
-**Saved:** 2026-11-23 (simulated phone test done) · **Owner:** David Petry
+**Saved:** 2026-11-23 (publish fix + pipe intro) · **Owner:** David Petry
 **To resume:** open a new Claude Code session on this repo and say
 *"Read docs/BOOKMARK.md and docs/ux-ui-audit-2026-11-20.md, then continue."*
 
@@ -45,6 +45,14 @@
 | Security by default (both repos' `CLAUDE.md`) | Every future change: least privilege, strict CSP (`script-src 'self'`, `connect-src 'none'`), device access only after a real tap, Dependabot keeps dependencies patched. The website's inline scripts and Suno toolkit loader were fixed to match |
 | Microphone hardening (see `SECURITY.md`) | Real taps only, refused inside other sites' frames, auto-off (2 min idle, hidden page, other tab), minimal request, and `connect-src 'none'` so nothing can leave the page. Hiding code isn't real security; these are |
 
+## Publishing fix (2026-11-23, PR #23)
+
+Four publishes (#17, #18, #21, #22) failed at `deploy-pages` with "No artifacts named github-pages
+were found": the deploy ran half a second after the upload and GitHub hadn't listed it yet. The
+workflow now uses GitHub's standard layout: **check → build (collect + upload) → deploy**, each its
+own job. First run after the fix passed all three. The live app was never affected (only docs had
+changed).
+
 ## How to change things
 
 1. `sh dart/build.sh` (needs the Dart SDK 3.9+): analyze, checks, compile into `js/`.
@@ -60,7 +68,9 @@
   job title. Suggested: use the same title on LinkedIn.
 - 2026-11-23 (david-petry-site PR #29): homepage now leads with audio, not AI consulting.
   Hero: "Ears on the mix. Hands on the build." / "Audio Engineer, Music Producer and Live Sound
-  Engineer. Drummer, Percussionist and Composer." About: "Many rooms, one good ear". Tab title
+  Engineer. Drummer, Percussionist and Composer." (Now, PR #30: three lines separated by "|",
+  no commas, "and" or periods: "Audio Engineer | Music Producer / Live Sound Engineer | Drummer /
+  Percussionist | Composer".) About: "Many rooms, one good ear". Tab title
   "David Petry — Audio Engineer & Drummer"; og-card.jpg redrawn.
 - **Facts to keep straight:** live sound since **June 2026**; working alongside professional
   producers and engineers as a drummer since **1999**. Most current work is audio engineering
