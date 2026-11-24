@@ -1,6 +1,6 @@
 # Bookmark: where Drum Studio stands
 
-**Saved:** 2026-11-23 (publish fix + pipe intro) · **Owner:** David Petry
+**Saved:** 2026-11-24 (checklists finished) · **Owner:** David Petry
 **To resume:** open a new Claude Code session on this repo and say
 *"Read docs/BOOKMARK.md and docs/ux-ui-audit-2026-11-20.md, then continue."*
 
@@ -77,7 +77,30 @@ changed).
   and live sound. David wants the copy **simple: state roles, no years, don't over-explain**.
 - Website deploys cost Netlify credits (15 of 300 a month per merge): batch changes into one PR.
 
-## Right now: David's two checklists
+## Checklists: finished (2026-11-24)
+
+**Real iPhone test** (David's results): silent switch, timing at 60/120/200 BPM and locking the
+phone all fine. Two real problems:
+- **Holding + / − didn't repeat on iPhone.** Fixed in PR #24 (tempo buttons claim the touch:
+  `touchstart` preventDefault + `touch-action: none`; cache `ds-v3`). Live; David to confirm on
+  the phone.
+- **Tuner didn't match another tuner app.** Tuner maths tested accurate to within 1.6 cents
+  (65–400 Hz, drum-like overtones) on a simulated iPhone at 48 kHz. Most likely the apps read
+  different overtones (Drum Studio reads the loudest peak). David chose to skip readings.
+  **Parked idea:** a "fundamental" mode that reads the lowest strong peak instead.
+- Vibration unticked because iPhones don't allow it for web apps (expected).
+
+**GitHub security** (David, guided step by step):
+- Two-factor sign-in: **skipped by David** (can add later at github.com/settings/security).
+- Both repos: Dependabot alerts + security updates, secret scanning + push protection, private
+  vulnerability reporting: switched on.
+- Drum Studio: ruleset "Protect main" Active (default branch; no deletions, no force pushes, PR
+  required, 0 approvals). Note: the branches API `protected` flag stays false for rulesets, so
+  it can't confirm this. Website `main` shows protected.
+- GitHub's on-demand secret-scan tool still says "Advanced Security not enabled"; it seems to
+  need the paid product, so it isn't a test of the free switches.
+
+## Earlier: David's two checklists
 
 A private checklist page (https://claude.ai/artifact/99auR6DqbSdvc5byf2W2LV) holds both:
 1. **GitHub security** (11 steps): two-factor sign-in and recovery codes; per repo, Dependabot
