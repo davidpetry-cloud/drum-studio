@@ -78,6 +78,12 @@ extension type Element._(JSObject _) implements JSObject {
   external void appendChild(Element child);
   external void replaceChildren();
   external void addEventListener(String type, JSFunction listener);
+  @JS('addEventListener')
+  external void addEventListenerWith(
+    String type,
+    JSFunction listener,
+    JSObject options,
+  );
   external Rect getBoundingClientRect();
   external void scrollIntoView(JSObject options);
   external void setAttribute(String name, String value);
