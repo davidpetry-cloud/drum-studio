@@ -300,6 +300,15 @@ class Metronome {
     for (final type in ['pointerup', 'pointercancel', 'pointerleave']) {
       button.addEventListener(type, ((JSAny? _) => stop()).toJS);
     }
+    // iPhone Safari treats a held finger as the start of a scroll or a
+    // long-press gesture and cancels the press part-way through, which
+    // stopped the repeat. Claiming the touch stops that; pointer events
+    // still arrive, so the tap and hold above work as before.
+    button.addEventListenerWith(
+      'touchstart',
+      ((Event e) => e.preventDefault()).toJS,
+      {'passive': false}.jsify()! as JSObject,
+    );
     // No long-press menu on phones.
     button.addEventListener(
       'contextmenu',

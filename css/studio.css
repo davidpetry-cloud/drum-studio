@@ -585,7 +585,7 @@ input[type="range"] { width: 100%; min-height: 44px; margin: 0; }
 }
 .step:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
 /* Hold-to-repeat buttons: no text selection or long-press menu on phones */
-.step, .transport-step { touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.step, .transport-step { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 
 /* The beat light: one big drumhead. Its fill says which kind of beat
    just played; it fades between beats. Overflow on the stage lets the
